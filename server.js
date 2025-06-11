@@ -10,41 +10,36 @@
 //https://qiita.com/syumiwohossu/items/ead2726731b9016edc87
 //getについて
 //https://qiita.com/syumiwohossu/items/f9ee317f31adc3ad387b
-
 //mysql
 //https://www.sejuku.net/blog/74849
 
 
-
-
-
 //モジュール
-const http = require("http");
 const express = require("express");
-const mysql = require("mysql");
-
 const app = express();
+
+const PORT = 3000;
+const mysql = require("mysql2");
+const path = require("path");
+
+//ポートを開く
+app.listen(PORT, () => {
+    console.log("connect");
+});
 
 //DB接続
 //PW変更してね
 const con = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: '*********',
+    password: 'pass1234',
     database: "SSS"
 });
-con.connect((err) => {
-    if (err) throw err
-    console.log("Connected");
-})
-
-
-
-
 
 //リンク作成
 //ホーム画面
-app.get("/",(req,res) => {
+app.get('/',(req,res) => {
+    console.log("home");
     res.sendFile(__dirname + "/html/home.html");
 });
 
@@ -52,6 +47,7 @@ app.get("/",(req,res) => {
 app.get("/sign-in",(req,res) => {
     res.sendFile(__dirname + "/html/signin.html");
 });
+
 //管理画面ホーム
 app.get("/administrator",(req,res) => {
     res.sendFile(__dirname + "/html/administrator_page.html");
@@ -65,11 +61,18 @@ app.get("/sign-up",(req,res) => {
 
 //ショー一覧画面
 app.get("/show",(req,res) => {
-    res.sendFile(__dirname + "/html/show_list.html");
+    res.sendFile(__dirname + "/html/showcd_list.html");
 });
+
 //各ショー画面
-con.query('SELECT name FROM entertainment_show',function(error,response){
+con.query('select name from entertainment_show;',function(error,response){
+    if (error) throw error;
     console.log(response);
+    for(let i = 0; i < response.length; i++){
+        app.get("/show/" + response[i].name,(req,res) => {
+            res.sendFile(__dirname + "/html/show_home.html");
+        });
+    }
 });
 
 //演者一覧画面
@@ -77,7 +80,16 @@ app.get("/entertainer",(req,res) => {
     res.sendFile(__dirname + "/html/entertainer_list.html");
 });
 
+//各演者画面
+con.query('select name from entertainer;',function(error,response){
+    if (error) throw error;
+    console.log(response);
+    for(let i = 0; i < response.length; i++){
+        app.get("/entertainer/" + response[i].name,(req,res) => {
+            res.sendFile(__dirname + "/html/entertainer_home.html");
+        });
+    }
+});
 
-//ポートを開く
-const port = 8080;
-app.listen(port);
+
+
