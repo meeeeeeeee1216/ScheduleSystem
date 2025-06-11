@@ -26,6 +26,7 @@ const mysql = require("mysql");
 const app = express();
 
 //DB接続
+//PW変更してね
 const con = mysql.createConnection({
     host: "localhost",
     user: "root",
