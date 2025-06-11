@@ -39,6 +39,9 @@ con.connect((err) => {
 })
 
 
+
+
+
 //リンク作成
 //ホーム画面
 app.get("/",(req,res) => {
@@ -54,10 +57,19 @@ app.get("/administrator",(req,res) => {
     res.sendFile(__dirname + "/html/administrator_page.html");
 });
 
+//管理アカウント申請
+app.get("/sign-up",(req,res) => {
+    res.sendFile(__dirname + "/html/signup.html");
+});
+
 
 //ショー一覧画面
 app.get("/show",(req,res) => {
     res.sendFile(__dirname + "/html/show_list.html");
+});
+//各ショー画面
+con.query('SELECT name FROM entertainment_show',function(error,response){
+    console.log(response);
 });
 
 //演者一覧画面
@@ -69,12 +81,3 @@ app.get("/entertainer",(req,res) => {
 //ポートを開く
 const port = 8080;
 app.listen(port);
-
-
-
-
-
-//ページ遷移
-function go_signin(){  
-
-}
