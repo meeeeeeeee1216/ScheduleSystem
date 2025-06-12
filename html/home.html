@@ -3,18 +3,26 @@
     <head>
         <meta charset="UTF-8">
         <title>ショーシフト管理システム</title>
-        <link href="../css/home.css" rel ="stylesheet">
+        <link href="css/home.css" rel ="stylesheet">
     </head>
     <body>
         <!-- タイトルヘッダーを作る -->
         <script src="js/make_header.js"></script>
 
+        <aside>
+            <ul>
+                <li><a href="http://localhost:3000/show">ショーページ一覧</a></li>
+                <li><a href="http://localhost:3000/entertainer">キャストページ一覧</a></li>
+                <li><a href="http://localhost:3000/administrator">ショー管理（要ログイン）</a></li>
+            </ul>
+        </aside>
+
         <div class="main-body"> 
-            <h2 id="sub-title">本日のシフト</h2>
+            <main>
+                <h2 id="sub-title">本日のシフト</h2>
+            </main>
         </div>
-        <div class="sidebar">
-            
-        </div>
+        
         
         <!-- ページリンク、遷移 -->
         <script type="text/javascript" src="../server.js"></script>

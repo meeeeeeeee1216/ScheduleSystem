@@ -27,7 +27,6 @@ app.listen(PORT, () => {
 });
 
 //DB接続
-//PW変更してね
 const con = mysql.createConnection({
     host: "localhost",
     user: "root",
@@ -66,7 +65,7 @@ app.get("/sign-up/end",(req,res) => {
 
 //ショー一覧画面
 app.get("/show",(req,res) => {
-    res.sendFile(__dirname + "/html/show_list.html");
+    res.sendFile(__dirname + "/html/list.html");
 });
 
 //各ショー画面
@@ -82,7 +81,7 @@ con.query('select name from entertainment_show;',function(error,response){
 
 //演者一覧画面
 app.get("/entertainer",(req,res) => {
-    res.sendFile(__dirname + "/html/entertainer_list.html");
+    res.sendFile(__dirname + "/html/list.html");
 });
 
 //各演者画面

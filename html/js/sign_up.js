@@ -1,14 +1,13 @@
 
 
 
-console.log("a")
-
 const id = form.account_id.value;
 const pw = form.PW.value;
 const sns_id = form.SNS_id.value;
 const sns = form.SNS.value;
 const mail = form.mail.value;
-console.log("b")
+
+
 if(sns = "0"){
     sns_text = "X（旧Twitter）";
 }else{

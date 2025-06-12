@@ -10,7 +10,7 @@
 const body_ele = document.getElementsByTagName("body");
 
 
-const div_ele = document.createElement("div");
+const div_ele = document.createElement("header");
 div_ele.class = "header";
 div_ele.style.backgroundColor = "gray";
 body_ele[0].appendChild(div_ele);
