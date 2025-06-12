@@ -66,7 +66,7 @@ app.get("/sign-up/end",(req,res) => {
 
 //ショー一覧画面
 app.get("/show",(req,res) => {
-    res.sendFile(__dirname + "/html/showcd_list.html");
+    res.sendFile(__dirname + "/html/show_list.html");
 });
 
 //各ショー画面
