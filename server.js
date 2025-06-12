@@ -17,7 +17,6 @@
 //モジュール
 const express = require("express");
 const app = express();
-
 const PORT = 3000;
 const mysql = require("mysql2");
 const path = require("path");
@@ -56,6 +55,12 @@ app.get("/administrator",(req,res) => {
 //管理アカウント申請
 app.get("/sign-up",(req,res) => {
     res.sendFile(__dirname + "/html/signup.html");
+});
+app.get("/sign-up/check",(req,res) => {
+    res.sendFile(__dirname + "/html/signup-check.html");
+});
+app.get("/sign-up/end",(req,res) => {
+    res.sendFile(__dirname + "/html/signup-end.html");
 });
 
 

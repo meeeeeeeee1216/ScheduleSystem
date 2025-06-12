@@ -6,20 +6,16 @@
         <link href="../css/home.css" rel ="stylesheet">
     </head>
     <body>
-        <div class="header">
-            <h1 id="title">
-                ショーシフト管理システム
-            </h1>
-            <button id="signin" onclick="location.href='http://localhost:3000/sign-in'">管理者ログイン</button>
-            <button id="signup" onclick="location.href='http://localhost:3000/sign-up'">管理アカウント作成申請</button>
-        </div>
+        <!-- タイトルヘッダーを作る -->
+        <script src="js/make_header.js"></script>
+
         <div class="main-body"> 
             <h2 id="sub-title">本日のシフト</h2>
-            
         </div>
         <div class="sidebar">
-
+            
         </div>
+        
         <!-- ページリンク、遷移 -->
         <script type="text/javascript" src="../server.js"></script>
         <!-- DB更新 -->
