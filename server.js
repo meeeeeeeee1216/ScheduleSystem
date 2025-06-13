@@ -73,9 +73,9 @@ app.get("/sign-up/end",(req,res) => {
 });
 
 //アカウント申請情報取得
-app.post("/sign-up",function(req,res){
+app.post("/sign-up/check",function(req,res){
     console.log(req.body);
-})
+});
 
 
 //ショー一覧画面
