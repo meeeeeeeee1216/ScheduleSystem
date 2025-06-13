@@ -23,18 +23,18 @@ div_ele.appendChild(title_ele);
 
 const signin_ele = document.createElement("button");
 signin_ele.id = "signin";
-// signin_ele.onclick = "location.href='http://localhost:3000/sign-in'"
+signin_ele.onclick = "location.href='http://localhost:3000/sign-in'"
 //チェック用
-signin_ele.onclick = "signin.html";
+// signin_ele.onclick = "signin.html";
 signin_ele.textContent = "管理者ログイン";
 title_ele.style.padding = '0px 40px';
 div_ele.appendChild(signin_ele);
 
 const signup_ele = document.createElement("button");
 signup_ele.id = "signup";
-// signup_ele.onclick = "location.href='http://localhost:3000/sign-up'"
+signup_ele.onclick = "location.href='http://localhost:3000/sign-up'"
 //チェック用
-signin_ele.onclick = "signup.html";
+// signin_ele.onclick = "signup.html";
 signup_ele.textContent = "管理者アカウント作成申請";
 title_ele.style.padding = '0px 40px';
 div_ele.appendChild(signup_ele);

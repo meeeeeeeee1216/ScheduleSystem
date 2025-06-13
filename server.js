@@ -34,6 +34,9 @@ const con = mysql.createConnection({
     database: "SSS"
 });
 
+//静的ファイルパス指定
+app.use(express.static("html"));
+
 //リンク作成
 //ホーム画面
 app.get('/',(req,res) => {
