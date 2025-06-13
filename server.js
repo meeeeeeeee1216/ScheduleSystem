@@ -20,6 +20,7 @@ const app = express();
 const PORT = 3000;
 const mysql = require("mysql2");
 const path = require("path");
+const bodyParser = require("body-parser");
 
 //ポートを開く
 app.listen(PORT, () => {
@@ -36,6 +37,12 @@ const con = mysql.createConnection({
 
 //静的ファイルパス指定
 app.use(express.static("html"));
+
+//json準備
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
+app.use(bodyParser.json());
 
 //リンク作成
 //ホーム画面
@@ -64,6 +71,11 @@ app.get("/sign-up/check",(req,res) => {
 app.get("/sign-up/end",(req,res) => {
     res.sendFile(__dirname + "/html/signup-end.html");
 });
+
+//アカウント申請情報取得
+app.post("/sign-up",function(req,res){
+    console.log(req.body);
+})
 
 
 //ショー一覧画面

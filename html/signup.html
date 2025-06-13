@@ -17,7 +17,7 @@
                 <p>※登録完了後、新規ショーの申請（要承認）が可能です。</p>
                 <p style="color:red">ショー開始日までに十分な期間を確保し、各種申請を行ってください。</p>
             </div>
-            <form action="" method="get" name="form">
+            <form action="../server.js" method="post" name="form">
                 <div id = "id">
                     <p>アカウントID</p>
                     <input type="text" name="account_id" maxlength="20" requierd>
@@ -44,10 +44,10 @@
                 <!-- <button onclick = "location.href='http://localhost:3000/sign-up/check'">確認</button> -->
                 <!-- チェック用 -->
                 <br>
-                <input type="submit" name="send" onclick="check('signup-check.html')">
-                <!-- <button name="send">送信</button> -->
+                <!-- <input type="submit" name="send" onclick="check('signup-check.html')"> -->
+                <button name="send" type="submit">送信</button>
             </form>
-            <script language="javascript" type="text/javascript">
+            <!-- <script language="javascript" type="text/javascript">
                 document.form.send.addEventListener('click',function(){
                     document.form.submit();
                 })
@@ -55,7 +55,7 @@
                     document.form.action = page;
                     document.form.submit();
                 };
-            </script>
+            </script> -->
         </div>
     </body>
 </html>
