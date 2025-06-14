@@ -75,6 +75,9 @@ app.get("/sign-up/end",(req,res) => {
 //アカウント申請情報取得
 app.post("/sign-up/check",function(req,res){
     console.log(req.body);
+    module.exports = req.body;
+    //表示
+    res.sendFile(__dirname + "/html/signup-check.html");
 });
 
 
