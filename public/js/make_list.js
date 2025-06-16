@@ -1,12 +1,14 @@
 //モジュール
-const mysql = require("mysql2");
+// const mysql = require("mysql2");
 
-const con = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: 'pass1234',
-    database: "SSS"
-});
+// const con = mysql.createConnection({
+//     host: "localhost",
+//     user: "root",
+//     password: 'pass1234',
+//     database: "SSS"
+// });
+
+const {mysql,con} = require("../../server.js");
 
 const kind_org = location.pathname;
 var kind = "";

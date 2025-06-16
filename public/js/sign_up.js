@@ -8,6 +8,13 @@ const sns_id = form.SNS_id;
 var sns = form.SNS;
 const mail = form.mail;
 
+//チェック用データ
+// const id = 'ID';
+// const pw = 'PASS';
+// const sns_id = 'snsid';
+// var sns = 0;
+// const mail = 'email@mail.com';
+
 if(sns = "0"){
     sns_text = "X（旧Twitter）";
 }else{
@@ -25,15 +32,15 @@ check_id.textContent = "アカウントID: " + id;
 check_ele.appendChild(check_id);
 
 const check_pw = document.createElement("p")
-check_pw.textContent = "パスワード: " + "*"*length(pw);
+check_pw.textContent = "パスワード: " + "*".repeat(pw.length);
 check_ele.appendChild(check_pw);
 
 const check_sns = document.createElement("p")
-check_pw.textContent = "SNS: " + sns_id + "（" + sns_text + "アカウント）";
+check_sns.textContent = "SNS: " + sns_id + "（" + sns_text + "アカウント）";
 check_ele.appendChild(check_sns);
 
 const check_mail = document.createElement("p")
-check_pw.textContent = "mail: " + mail;
+check_mail.textContent = "mail: " + mail;
 check_ele.appendChild(check_mail);
 
 //送信用フォームデータ挿入

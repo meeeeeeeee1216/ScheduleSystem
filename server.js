@@ -12,6 +12,10 @@
 //https://qiita.com/syumiwohossu/items/f9ee317f31adc3ad387b
 //mysql
 //https://www.sejuku.net/blog/74849
+//メールの自動送信
+//https://qiita.com/whopper1962/items/85f11e19cf30ec30ce61
+//cookie
+//https://qiita.com/whopper1962/items/88c1eb7c3dfeb813ea4d
 
 
 //モジュール
@@ -35,8 +39,10 @@ const con = mysql.createConnection({
     database: "SSS"
 });
 
+module.exports = {mysql,con};
+
 //静的ファイルパス指定
-app.use(express.static("html"));
+app.use("/static",express.static(path.join(__dirname,"public")));
 
 //json準備
 app.use(bodyParser.urlencoded({
@@ -48,42 +54,64 @@ app.use(bodyParser.json());
 //ホーム画面
 app.get('/',(req,res) => {
     console.log("home");
-    res.sendFile(__dirname + "/html/home.html");
+    res.sendFile(__dirname + "public/html/home.html");
 });
 
 //ログイン画面
 app.get("/sign-in",(req,res) => {
-    res.sendFile(__dirname + "/html/signin.html");
+    res.sendFile(__dirname + "public/html/signin.html");
+});
+
+//ログイン→管理画面へ遷移
+app.post("/administrator",function(req,res){
+    //console.log(req.body);
+    //アカウント照合
+    //認証トークン生成
+    //Coockieに保存
+    module.exports = req.body;
+    //表示
+    res.sendFile(__dirname + "public/html/signup-check.html");
 });
 
 //管理画面ホーム
 app.get("/administrator",(req,res) => {
-    res.sendFile(__dirname + "/html/administrator_page.html");
+    //ログイン状態チェック
+    //ログアウトなら登録画面へ
+    res.sendFile(__dirname + "public/html/administrator_page.html");
 });
 
 //管理アカウント申請
 app.get("/sign-up",(req,res) => {
-    res.sendFile(__dirname + "/html/signup.html");
-});
-app.get("/sign-up/check",(req,res) => {
-    res.sendFile(__dirname + "/html/signup-check.html");
-});
-app.get("/sign-up/end",(req,res) => {
-    res.sendFile(__dirname + "/html/signup-end.html");
+    res.sendFile(__dirname + "public/html/signup.html");
 });
 
 //アカウント申請情報取得
+//確認画面に情報を送信
 app.post("/sign-up/check",function(req,res){
-    console.log(req.body);
+    //console.log(req.body);
     module.exports = req.body;
     //表示
-    res.sendFile(__dirname + "/html/signup-check.html");
+    res.sendFile(__dirname + "public/html/signup-check.html");
+});
+//確認画面からDB登録、サーバアカウントに通知送信、authorityが1になったら承認（初期値NULL）
+app.post("/sign-up/end",function(req,res){
+    console.log(req.body);
+    con.query(
+        'INSERT INTO account (account_id, PW, SNSid, sns, mail) values (?,?,?,?,?)',
+        [req.body.account_id,req.body.PW,req.body.SNS_id,
+            req.body.SNS,req.body.mail],(error, res) => {
+                //サーバアカウントに申請通知を出す(未実装)
+                //通知DBに申請通知を入れて参照させるイメージ？
+                //完了画面の表示
+                res.sendFile(__dirname + "public/html/signup-end.html");
+            }
+    )
 });
 
 
 //ショー一覧画面
 app.get("/show",(req,res) => {
-    res.sendFile(__dirname + "/html/list.html");
+    res.sendFile(__dirname + "public/html/list.html");
 });
 
 //各ショー画面
@@ -92,14 +120,15 @@ con.query('select name from entertainment_show;',function(error,response){
     console.log(response);
     for(let i = 0; i < response.length; i++){
         app.get("/show/" + response[i].name,(req,res) => {
-            res.sendFile(__dirname + "/html/show_home.html");
+            //URLから名前を拾ってhtmlは動的生成
+            res.sendFile(__dirname + "public/html/show_home.html");
         });
     }
 });
 
 //演者一覧画面
 app.get("/entertainer",(req,res) => {
-    res.sendFile(__dirname + "/html/list.html");
+    res.sendFile(__dirname + "public/html/list.html");
 });
 
 //各演者画面
@@ -108,7 +137,8 @@ con.query('select name from entertainer;',function(error,response){
     console.log(response);
     for(let i = 0; i < response.length; i++){
         app.get("/entertainer/" + response[i].name,(req,res) => {
-            res.sendFile(__dirname + "/html/entertainer_home.html");
+            //URLから名前を拾ってhtmlは動的生成
+            res.sendFile(__dirname + "public/html/entertainer_home.html");
         });
     }
 });

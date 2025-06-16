@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>ショーシフト管理システム</title>
+    </head>
+    <body>
+        <script src = "../js/make_header.js"></script>
+        <div class="signin-form">
+            <h2>管理アカウントにログイン</h2>
+            <form action="http://localhost:3000/administrator" method="post" name="form">
+                <p>アカウントID</p>
+                <input type="text" name="account_id" maxlength="20" requierd>
+                <p>パスワード</p>
+                <input type="password" name="PW" minlength="7" maxlength="50" requierd>
+                <button name="send" type="submit">送信</button>
+            </form>
+        </div>
+    </body>
+</html>

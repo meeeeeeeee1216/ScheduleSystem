@@ -1,6 +1,7 @@
 CREATE DATABASE SSS;
 USE SSS;
 
+-- authorityが1になったら承認（初期値NULL）
 CREATE TABLE SSS.account ( 
 account_id varchar(20) not null PRIMARY KEY,
 pw varchar(50) not null,
