@@ -42,7 +42,7 @@ const con = mysql.createConnection({
 module.exports = {mysql,con};
 
 //静的ファイルパス指定
-app.use("/static",express.static(path.join(__dirname,"public")));
+app.use("/public",express.static(path.join(__dirname,"/public")));
 
 //json準備
 app.use(bodyParser.urlencoded({
@@ -54,12 +54,12 @@ app.use(bodyParser.json());
 //ホーム画面
 app.get('/',(req,res) => {
     console.log("home");
-    res.sendFile(__dirname + "public/html/home.html");
+    res.sendFile(__dirname + "/public/html/home.html");
 });
 
 //ログイン画面
 app.get("/sign-in",(req,res) => {
-    res.sendFile(__dirname + "public/html/signin.html");
+    res.sendFile(__dirname + "/public/html/signin.html");
 });
 
 //ログイン→管理画面へ遷移
@@ -70,29 +70,39 @@ app.post("/administrator",function(req,res){
     //Coockieに保存
     module.exports = req.body;
     //表示
-    res.sendFile(__dirname + "public/html/signup-check.html");
+    res.sendFile(__dirname + "/public/html/signup-check.html");
 });
 
 //管理画面ホーム
 app.get("/administrator",(req,res) => {
     //ログイン状態チェック
     //ログアウトなら登録画面へ
-    res.sendFile(__dirname + "public/html/administrator_page.html");
+    res.sendFile(__dirname + "/public/html/administrator_page.html");
 });
 
 //管理アカウント申請
 app.get("/sign-up",(req,res) => {
-    res.sendFile(__dirname + "public/html/signup.html");
+    res.sendFile(__dirname + "/public/html/signup.html");
 });
 
 //アカウント申請情報取得
 //確認画面に情報を送信
 app.post("/sign-up/check",function(req,res){
     //console.log(req.body);
-    module.exports = req.body;
+    // // データ処理（例: データを加工）
+    // const processedData = {
+    //     message: `Data received: ${receivedData.message}`,
+    //     receivedAt: new Date()
+    // };
+
+    // // JSON形式でレスポンスを返す
+    // res.json(processedData);
+
     //表示
-    res.sendFile(__dirname + "public/html/signup-check.html");
+    // res.formData(req.body);
+    res.sendFile(__dirname + "/public/html/signup-check.html");
 });
+
 //確認画面からDB登録、サーバアカウントに通知送信、authorityが1になったら承認（初期値NULL）
 app.post("/sign-up/end",function(req,res){
     console.log(req.body);
@@ -111,7 +121,7 @@ app.post("/sign-up/end",function(req,res){
 
 //ショー一覧画面
 app.get("/show",(req,res) => {
-    res.sendFile(__dirname + "public/html/list.html");
+    res.sendFile(__dirname + "/public/html/list.html");
 });
 
 //各ショー画面
@@ -121,14 +131,14 @@ con.query('select name from entertainment_show;',function(error,response){
     for(let i = 0; i < response.length; i++){
         app.get("/show/" + response[i].name,(req,res) => {
             //URLから名前を拾ってhtmlは動的生成
-            res.sendFile(__dirname + "public/html/show_home.html");
+            res.sendFile(__dirname + "/public/html/show_home.html");
         });
     }
 });
 
 //演者一覧画面
 app.get("/entertainer",(req,res) => {
-    res.sendFile(__dirname + "public/html/list.html");
+    res.sendFile(__dirname + "/public/html/list.html");
 });
 
 //各演者画面
@@ -138,7 +148,7 @@ con.query('select name from entertainer;',function(error,response){
     for(let i = 0; i < response.length; i++){
         app.get("/entertainer/" + response[i].name,(req,res) => {
             //URLから名前を拾ってhtmlは動的生成
-            res.sendFile(__dirname + "public/html/entertainer_home.html");
+            res.sendFile(__dirname + "/public/html/entertainer_home.html");
         });
     }
 });

@@ -5,16 +5,57 @@
         <title>ショーシフト管理システム</title>
     </head>
     <body>
-        <script src = "../js/make_header.js"></script>
+        <script src = "/js/make_header.js" type="text/javascript"></script>
         <div class="signin-form">
-            <h2>管理アカウントにログイン</h2>
-            <form action="http://localhost:3000/administrator" method="post" name="form">
-                <p>アカウントID</p>
-                <input type="text" name="account_id" maxlength="20" requierd>
-                <p>パスワード</p>
-                <input type="password" name="PW" minlength="7" maxlength="50" requierd>
+            <h2>管理アカウント新規申請</h2>
+            <p>管理アカウント作成に必要な情報を入力してください。</p>
+            <div class="attention">
+                <h3>＜注意事項＞</h3>
+                <p>※登録にはお人柄のわかるX（旧Twitter）またはInstagramのアカウントが必要です。</p>
+                <p>※登録完了にはサーバー管理者の承認（SNSアカウントの確認）が必要なため数日を要します。</p>
+                <p>※申請が承認され、登録が完了された際にメールが自動送信されます。</p>
+                <p>※登録完了後、新規ショーの申請（要承認）が可能です。</p>
+                <p style="color:red">ショー開始日までに十分な期間を確保し、各種申請を行ってください。</p>
+            </div>
+            <form action="http://localhost:3000/sign-up/check" method="post" name="form">
+                <div id = "id">
+                    <p>アカウントID</p>
+                    <input type="text" name="account_id" maxlength="20" requierd>
+                </div>
+
+                <div id="pw">
+                    <p>パスワード</p>
+                    <input type="password" name="PW" minlength="7" maxlength="50" requierd>
+                </div>
+                
+                <div id="sns">
+                    <p>SNSアカウント</p>
+                    <p style="display:inline">ID:</p>
+                    <input type="text" name="SNS_id" maxlength="20" requierd>
+                    <p style="display:inline">SNSサイト:</p>
+                    <input type="radio" name="SNS" value="0" requierd>X（旧Twitter）
+                    <input type="radio" name="SNS" value="1" requierd>Instagram
+                </div>
+                
+                <div id="mail">
+                    <p>メールアドレス（登録完了通知、各種報告の通知などをお送りします。）</p>
+                    <input type="email" name="mail" requierd>
+                </div>
+                <!-- <button onclick = "location.href='http://localhost:3000/sign-up/check'">確認</button> -->
+                <!-- チェック用 -->
+                <br>
+                <!-- <input type="submit" name="send" onclick="check('signup-check.html')"> -->
                 <button name="send" type="submit">送信</button>
             </form>
+            <!-- <script language="javascript" type="text/javascript">
+                document.form.send.addEventListener('click',function(){
+                    document.form.submit();
+                })
+                const check = (page) => {
+                    document.form.action = page;
+                    document.form.submit();
+                };
+            </script> -->
         </div>
     </body>
 </html>

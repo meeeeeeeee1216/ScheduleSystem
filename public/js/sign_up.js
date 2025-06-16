@@ -1,6 +1,6 @@
 console.log("make");
 
-const form = require("../../server.js");
+console.log(response.formData());
 
 const id = form.account_id;
 const pw = form.PW;
@@ -8,7 +8,7 @@ const sns_id = form.SNS_id;
 var sns = form.SNS;
 const mail = form.mail;
 
-//チェック用データ
+// チェック用データ
 // const id = 'ID';
 // const pw = 'PASS';
 // const sns_id = 'snsid';
