@@ -25,6 +25,7 @@ const PORT = 3000;
 const mysql = require("mysql2");
 const path = require("path");
 const bodyParser = require("body-parser");
+const fs = require("fs");
 
 //ポートを開く
 app.listen(PORT, () => {
@@ -89,17 +90,13 @@ app.get("/sign-up",(req,res) => {
 //確認画面に情報を送信
 app.post("/sign-up/check",function(req,res){
     //console.log(req.body);
-    // // データ処理（例: データを加工）
-    // const processedData = {
-    //     message: `Data received: ${receivedData.message}`,
-    //     receivedAt: new Date()
-    // };
+    // データ処理（例: データを加工）
 
-    // // JSON形式でレスポンスを返す
-    // res.json(processedData);
-
-    //表示
-    // res.formData(req.body);
+    // データをjsonファイルに書き出す
+    var text = JSON.stringify(req.body);
+    fs.writeFile("./public/json/signup_tmp.json",text,(err) => {
+        if(err) rej(err);
+    });
     res.sendFile(__dirname + "/public/html/signup-check.html");
 });
 

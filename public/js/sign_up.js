@@ -1,12 +1,11 @@
-console.log("make");
 
-console.log(response.formData());
+let reader = new FileReader();
+var form = JSON.parse(reader.readAsText("../json/signup_tmp.json"));
 
-const id = form.account_id;
-const pw = form.PW;
-const sns_id = form.SNS_id;
-var sns = form.SNS;
-const mail = form.mail;
+document.addEventListener("DOMContentLoaded", function() => {
+    fetch("../json/signup_tmp.json").
+    then(response)
+})
 
 // チェック用データ
 // const id = 'ID';
@@ -54,4 +53,7 @@ const sns_form = document.getElementsByName("SNS");
 sns_form[0].value = sns;
 const mail_form = document.getElementsByName("mail");
 mail_form[0].value = mail;
+
+//tmpファイルを削除する
+fs.unlink("/public/json/signup_tmp.json")
 
