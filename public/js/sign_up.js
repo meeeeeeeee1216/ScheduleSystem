@@ -1,12 +1,3 @@
-
-let reader = new FileReader();
-var form = JSON.parse(reader.readAsText("../json/signup_tmp.json"));
-
-document.addEventListener("DOMContentLoaded", function() => {
-    fetch("../json/signup_tmp.json").
-    then(response)
-})
-
 // チェック用データ
 // const id = 'ID';
 // const pw = 'PASS';
@@ -54,6 +45,4 @@ sns_form[0].value = sns;
 const mail_form = document.getElementsByName("mail");
 mail_form[0].value = mail;
 
-//tmpファイルを削除する
-fs.unlink("/public/json/signup_tmp.json")
 
