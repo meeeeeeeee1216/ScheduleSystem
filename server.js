@@ -25,6 +25,8 @@ const PORT = 3000;
 const mysql = require("mysql2");
 const path = require("path");
 const bodyParser = require("body-parser");
+const fs = require("fs");
+app.set('view engine','ejs')
 
 //ポートを開く
 app.listen(PORT, () => {
@@ -89,18 +91,7 @@ app.get("/sign-up",(req,res) => {
 //確認画面に情報を送信
 app.post("/sign-up/check",function(req,res){
     //console.log(req.body);
-    // // データ処理（例: データを加工）
-    // const processedData = {
-    //     message: `Data received: ${receivedData.message}`,
-    //     receivedAt: new Date()
-    // };
-
-    // // JSON形式でレスポンスを返す
-    // res.json(processedData);
-
-    //表示
-    // res.formData(req.body);
-    res.sendFile(__dirname + "/public/html/signup-check.html");
+    res.render(__dirname + "/public/views/signup-check.html", form);
 });
 
 //確認画面からDB登録、サーバアカウントに通知送信、authorityが1になったら承認（初期値NULL）

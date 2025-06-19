@@ -1,13 +1,3 @@
-console.log("make");
-
-console.log(response.formData());
-
-const id = form.account_id;
-const pw = form.PW;
-const sns_id = form.SNS_id;
-var sns = form.SNS;
-const mail = form.mail;
-
 // チェック用データ
 // const id = 'ID';
 // const pw = 'PASS';
@@ -54,4 +44,5 @@ const sns_form = document.getElementsByName("SNS");
 sns_form[0].value = sns;
 const mail_form = document.getElementsByName("mail");
 mail_form[0].value = mail;
+
 
