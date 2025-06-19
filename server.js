@@ -121,7 +121,7 @@ app.post("/sign-up/end",function(req,res){
 
 //ショー一覧画面
 app.get("/show",(req,res) => {
-    res.sendFile(__dirname + "/public/html/list.html");
+    res.render(__dirname + "/public/html/list.html",con);
 });
 
 //各ショー画面
@@ -131,14 +131,14 @@ con.query('select name from entertainment_show;',function(error,response){
     for(let i = 0; i < response.length; i++){
         app.get("/show/" + response[i].name,(req,res) => {
             //URLから名前を拾ってhtmlは動的生成
-            res.sendFile(__dirname + "/public/html/show_home.html");
+            res.render(__dirname + "/public/html/show_home.html",con);
         });
     }
 });
 
 //演者一覧画面
 app.get("/entertainer",(req,res) => {
-    res.sendFile(__dirname + "/public/html/list.html");
+    res.render(__dirname + "/public/html/list.html",con);
 });
 
 //各演者画面
@@ -148,7 +148,7 @@ con.query('select name from entertainer;',function(error,response){
     for(let i = 0; i < response.length; i++){
         app.get("/entertainer/" + response[i].name,(req,res) => {
             //URLから名前を拾ってhtmlは動的生成
-            res.sendFile(__dirname + "/public/html/entertainer_home.html");
+            res.render(__dirname + "/public/html/entertainer_home.html",con);
         });
     }
 });

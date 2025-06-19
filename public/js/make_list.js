@@ -8,7 +8,7 @@
 //     database: "SSS"
 // });
 
-const {mysql,con} = require("../../server.js");
+const {mysql,con} = require("sserver.js");
 
 const kind_org = location.pathname;
 var kind = "";

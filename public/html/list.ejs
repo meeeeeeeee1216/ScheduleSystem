@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>ショーシフト管理システム</title>
+    </head>
+    <body>
+        <!-- タイトルヘッダーを作る -->
+        <script src="public/js/make_header.js"></script>
+
+        <aside>
+            <ul>
+                <li><a href="http://localhost:3000/show">ショーページ一覧</a></li>
+                <li><a href="http://localhost:3000/entertainer">キャストページ一覧</a></li>
+                <li><a href="http://localhost:3000/administrator">ショー管理（要ログイン）</a></li>
+            </ul>
+        </aside>
+
+        <% const kind_org = location.pathname;
+            var kind = "";
+            if (location.pathname === "/show"){
+                kind = "show";
+            }else{
+                kind = "entertainer"
+            }
+        %>
+
+        <div class="main-body"> 
+            <main>
+                <h2 id="sub-title">
+                    <% if(location.pathname === "/show") { %> 
+                        ショー一覧
+                    <% } else{ %>
+                        キャスト一覧
+                </h2>
+                <ul id="list">
+                    <% #テーブル名を決める %>
+                    <% if(location.pathname === "/show") {
+                        var sql = "entertainment_show";
+                    }else{
+                        var sql = "entertainer"; %>
+                    <% #DBから抽出
+                        con.query('select name from ' + sql + ';',function(error,response){
+                            if (error) throw error;
+                            const ul = [];
+                            const a = [];
+                            for(let i = 0; i < response.length; i++){ %>
+                                <ul><a href = <% "http://localhost:3000/${location.pathname}" + response[i].name %>>
+                                    <% response[i].name %> </ul>
+                            <% }
+                        }); %>
+                </ul>
+            </main>
+        </div>
+    </body>
+</html>
