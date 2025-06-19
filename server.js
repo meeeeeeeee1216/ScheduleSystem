@@ -26,6 +26,7 @@ const mysql = require("mysql2");
 const path = require("path");
 const bodyParser = require("body-parser");
 const fs = require("fs");
+const ejs = require("ejs");
 app.set('view engine','ejs')
 
 //ポートを開く
@@ -41,7 +42,6 @@ const con = mysql.createConnection({
     database: "SSS"
 });
 
-module.exports = {mysql,con};
 
 //静的ファイルパス指定
 app.use("/public",express.static(path.join(__dirname,"/public")));
@@ -70,9 +70,7 @@ app.post("/administrator",function(req,res){
     //アカウント照合
     //認証トークン生成
     //Coockieに保存
-    module.exports = req.body;
     //表示
-    res.sendFile(__dirname + "/public/html/signup-check.html");
 });
 
 //管理画面ホーム
@@ -91,28 +89,31 @@ app.get("/sign-up",(req,res) => {
 //確認画面に情報を送信
 app.post("/sign-up/check",function(req,res){
     //console.log(req.body);
-    res.render(__dirname + "/public/views/signup-check.html", form);
+    var form = req.body;
+    console.log(form);
+    res.render("signup-check.ejs", form);
 });
 
 //確認画面からDB登録、サーバアカウントに通知送信、authorityが1になったら承認（初期値NULL）
 app.post("/sign-up/end",function(req,res){
-    console.log(req.body);
+    //insertなぜかできない？cmdから見るとデータ入ってないけど、成功ログは出てる
     con.query(
         'INSERT INTO account (account_id, PW, SNSid, sns, mail) values (?,?,?,?,?)',
         [req.body.account_id,req.body.PW,req.body.SNS_id,
             req.body.SNS,req.body.mail],(error, res) => {
-                //サーバアカウントに申請通知を出す(未実装)
-                //通知DBに申請通知を入れて参照させるイメージ？
-                //完了画面の表示
-                res.sendFile(__dirname + "public/html/signup-end.html");
+                console.log("DB insert success")
             }
     )
+    //サーバアカウントに申請通知を出す(未実装)
+    //通知DBに申請通知を入れて参照させるイメージ？
+    //完了画面の表示
+    res.sendFile(__dirname + "/public/html/signup-end.html");
 });
 
 
 //ショー一覧画面
 app.get("/show",(req,res) => {
-    res.render(__dirname + "/public/html/list.html",con);
+    res.render("list.ejs",{con :con});
 });
 
 //各ショー画面
@@ -122,14 +123,14 @@ con.query('select name from entertainment_show;',function(error,response){
     for(let i = 0; i < response.length; i++){
         app.get("/show/" + response[i].name,(req,res) => {
             //URLから名前を拾ってhtmlは動的生成
-            res.render(__dirname + "/public/html/show_home.html",con);
+            res.render("show_home.ejs",con);
         });
     }
 });
 
 //演者一覧画面
 app.get("/entertainer",(req,res) => {
-    res.render(__dirname + "/public/html/list.html",con);
+    res.render("list.ejs",con);
 });
 
 //各演者画面
@@ -139,7 +140,7 @@ con.query('select name from entertainer;',function(error,response){
     for(let i = 0; i < response.length; i++){
         app.get("/entertainer/" + response[i].name,(req,res) => {
             //URLから名前を拾ってhtmlは動的生成
-            res.render(__dirname + "/public/html/entertainer_home.html",con);
+            res.render("entertainer_home.ejs",con);
         });
     }
 });

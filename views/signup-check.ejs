@@ -8,40 +8,40 @@
         <script src = "/public/js/make_header.js" type="text/javascript"></script>
         <div id="signup-check">
             <h3>入力内容を確認してください</h3>
-            <p>アカウントID：<%- form.body.account_id %></p>
-            <p>PW：<%- "*".repeat(form.body.PW.length) %></p>
+            <p>アカウントID：<%- account_id %></p>
+            <p>PW：<%- "*".repeat(PW.length) %></p>
             <%  var sns_text = "";
-                if(form.body.sns = "0"){
+                if(sns = "0"){
                    sns_text = "X（旧Twitter）";
                 }else{
                     sns_text = "Instagram"
                 } 
             %>
-            <p>SNS：<%- form.body.SNS_id %> ( <%- form.body.sns_text %> アカウント ) </p>
-            <p>mail：<%- form.body.mail %></p>
+            <p>SNS：<%- SNS_id %> ( <%- sns_text %> アカウント ) </p>
+            <p>mail：<%- mail %></p>
         </div>
         <!-- 送信確定用隠しフォーム -->
         <div id="signiup-data-form">
             <form action="http://localhost:3000/sign-up/end" method="post" name="form">
                 <div id="hide-form" style="display: none">
                     <p>アカウントID</p>
-                    <input type="text" name="account_id" maxlength="20" value = <%- form.body.account_id %> requierd>
+                    <input type="text" name="account_id" maxlength="20" value = <%- account_id %> requierd>
                     <p>パスワード</p>
-                    <input type="password" name="PW" minlength="7" maxlength="50" value = <%- form.body.PW %> requierd>
+                    <input type="password" name="PW" minlength="7" maxlength="50" value = <%- PW %> requierd>
                     <p>SNSアカウント</p>
                     <p style="display:inline">ID:</p>
-                    <input type="text" name="SNS_id" maxlength="20" value = <%- form.body.SNS_id %> requierd>
+                    <input type="text" name="SNS_id" maxlength="20" value = <%- SNS_id %> requierd>
                     <p style="display:inline">SNSサイト:</p>
-                    <input type="radio" name="SNS" value="0" requierd>X（旧Twitter）
-                    <input type="radio" name="SNS" value="1" requierd>Instagram
-                    <% var input = document.getElementsByName("SNS");
-                        if(form.body.SNS === '0'){
-                            input[0].checked = true;
-                    }else{
-                        input[1].checked = true;
-                    } %>
+                    
+                    <% if(SNS === '0'){ %>
+                        <input type="radio" name="SNS" value="0" requierd checked>X（旧Twitter）
+                        <input type="radio" name="SNS" value="1" requierd>Instagram
+                    <% }else{ %>
+                        <input type="radio" name="SNS" value="0" requierd >X（旧Twitter）
+                        <input type="radio" name="SNS" value="1" requierd checked>Instagram
+                    <% } %>
                     <p>メールアドレス（登録完了通知、各種報告の通知などをお送りします。）</p>
-                    <input type="email" name="mail" value = <%- form.body.mail %> requierd>
+                    <input type="email" name="mail" value = <%- mail %> requierd>
                 </div>
                 <button name="send" type="submit">確定</button>
             </form>

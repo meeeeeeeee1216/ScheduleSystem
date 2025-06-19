@@ -34,16 +34,11 @@
                         キャスト一覧
                 </h2>
                 <ul id="list">
-                    <% #テーブル名を決める %>
                     <% if(location.pathname === "/show") {
                         var sql = "entertainment_show";
                     }else{
                         var sql = "entertainer"; %>
-                    <% #DBから抽出
-                        con.query('select name from ' + sql + ';',function(error,response){
-                            if (error) throw error;
-                            const ul = [];
-                            const a = [];
+                    <%  con.query('select name from ' + sql + ';',function(error,response){
                             for(let i = 0; i < response.length; i++){ %>
                                 <ul><a href = <% "http://localhost:3000/${location.pathname}" + response[i].name %>>
                                     <% response[i].name %> </ul>
