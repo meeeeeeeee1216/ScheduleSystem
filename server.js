@@ -55,7 +55,6 @@ app.use(bodyParser.json());
 //リンク作成
 //ホーム画面
 app.get('/',(req,res) => {
-    console.log("home");
     res.sendFile(__dirname + "/public/html/home.html");
 });
 
@@ -66,7 +65,7 @@ app.get("/sign-in",(req,res) => {
 
 //ログイン→管理画面へ遷移
 app.post("/administrator",function(req,res){
-    //console.log(req.body);
+    //  log(req.body);
     //アカウント照合
     //認証トークン生成
     //Coockieに保存
@@ -90,7 +89,6 @@ app.get("/sign-up",(req,res) => {
 app.post("/sign-up/check",function(req,res){
     //console.log(req.body);
     var form = req.body;
-    console.log(form);
     res.render("signup-check.ejs", form);
 });
 
@@ -113,34 +111,32 @@ app.post("/sign-up/end",function(req,res){
 
 //ショー一覧画面
 app.get("/show",(req,res) => {
-    res.render("list.ejs",{con :con});
+    res.render("list.ejs",{con:con,kind_org:req.originalUrl});
 });
 
 //各ショー画面
 con.query('select name from entertainment_show;',function(error,response){
     if (error) throw error;
-    console.log(response);
     for(let i = 0; i < response.length; i++){
         app.get("/show/" + response[i].name,(req,res) => {
             //URLから名前を拾ってhtmlは動的生成
-            res.render("show_home.ejs",con);
+            res.render("show_home.ejs",{con:con,show_name:req.originalUrl});
         });
     }
 });
 
 //演者一覧画面
 app.get("/entertainer",(req,res) => {
-    res.render("list.ejs",con);
+    res.render("list.ejs",{con:con,kind_org:req.originalUrl});
 });
 
 //各演者画面
 con.query('select name from entertainer;',function(error,response){
     if (error) throw error;
-    console.log(response);
     for(let i = 0; i < response.length; i++){
         app.get("/entertainer/" + response[i].name,(req,res) => {
             //URLから名前を拾ってhtmlは動的生成
-            res.render("entertainer_home.ejs",con);
+            res.render("entertainer_home.ejs",{con:con,name:req.originalUrl});
         });
     }
 });

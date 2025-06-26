@@ -16,9 +16,8 @@
             </ul>
         </aside>
 
-        <% const kind_org = location.pathname;
-            var kind = "";
-            if (location.pathname === "/show"){
+        <% var kind = "";
+            if (kind_org === "/show"){
                 kind = "show";
             }else{
                 kind = "entertainer"
@@ -28,22 +27,27 @@
         <div class="main-body"> 
             <main>
                 <h2 id="sub-title">
-                    <% if(location.pathname === "/show") { %> 
+                    <% if(kind_org === "/show") { %> 
                         ショー一覧
                     <% } else{ %>
                         キャスト一覧
+                    <% } %>
                 </h2>
-                <ul id="list">
-                    <% if(location.pathname === "/show") {
+                <ul>
+                    <% if(kind_org === "/show") {
                         var sql = "entertainment_show";
                     }else{
-                        var sql = "entertainer"; %>
-                    <%  con.query('select name from ' + sql + ';',function(error,response){
-                            for(let i = 0; i < response.length; i++){ %>
-                                <ul><a href = <% "http://localhost:3000/${location.pathname}" + response[i].name %>>
-                                    <% response[i].name %> </ul>
-                            <% }
-                        }); %>
+                        var sql = "entertainer"; 
+                    }%>
+                    <% con.query('SELECT name FROM ' + sql + ';',function(error,response){
+                        for(let i = 0; i < response.length; i++){
+                            const name = response[i].name; 
+                            console.log(name); %>
+                            <li>
+                                <%= name %> 
+                            </li>
+                        <% }
+                    }); %>
                 </ul>
             </main>
         </div>
