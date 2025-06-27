@@ -111,14 +111,16 @@ app.post("/sign-up/end",function(req,res){
 
 //ショー一覧画面
 app.get("/show",(req,res) => {
-    res.render("list.ejs",{con:con,kind_org:req.originalUrl});
+    con.query("select show_id,name from entertainment_show;",function(error, response){
+        res.render("list.ejs",{list: response,kind_org:req.originalUrl});
+    })
 });
 
 //各ショー画面
-con.query('select name from entertainment_show;',function(error,response){
+con.query('select show_id,name from entertainment_show;',function(error,response){
     if (error) throw error;
     for(let i = 0; i < response.length; i++){
-        app.get("/show/" + response[i].name,(req,res) => {
+        app.get("/show/" + response[i].show_id,(req,res) => {
             //URLから名前を拾ってhtmlは動的生成
             res.render("show_home.ejs",{con:con,show_name:req.originalUrl});
         });
@@ -127,16 +129,18 @@ con.query('select name from entertainment_show;',function(error,response){
 
 //演者一覧画面
 app.get("/entertainer",(req,res) => {
-    res.render("list.ejs",{con:con,kind_org:req.originalUrl});
+    con.query("select entertainer_id,name from entertainer;",function(error, response){
+        res.render("list.ejs",{list: response,kind_org:req.originalUrl});
+    })
 });
 
 //各演者画面
-con.query('select name from entertainer;',function(error,response){
+con.query('select entertainer_id ,name from entertainer;',function(error,response){
     if (error) throw error;
     for(let i = 0; i < response.length; i++){
-        app.get("/entertainer/" + response[i].name,(req,res) => {
+        app.get("/entertainer/" + response[i].entertainer_id,(req,res) => {
             //URLから名前を拾ってhtmlは動的生成
-            res.render("entertainer_home.ejs",{con:con,name:req.originalUrl});
+            res.render("entertainer_home.ejs",{con:con,name:response[i].name});
         });
     }
 });

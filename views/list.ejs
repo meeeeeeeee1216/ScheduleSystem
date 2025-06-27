@@ -34,20 +34,19 @@
                     <% } %>
                 </h2>
                 <ul>
-                    <% if(kind_org === "/show") {
-                        var sql = "entertainment_show";
-                    }else{
-                        var sql = "entertainer"; 
-                    }%>
-                    <% con.query('SELECT name FROM ' + sql + ';',function(error,response){
-                        for(let i = 0; i < response.length; i++){
-                            const name = response[i].name; 
-                            console.log(name); %>
-                            <li>
-                                <%= name %> 
-                            </li>
-                        <% }
-                    }); %>
+                    <% for(let i = 0; i < list.length; i++){
+                        if(kind_org === "/show"){
+                            var link = 'http://localhost:3000' + kind_org + '/' + list[i].show_id;
+                        }else{
+                            var link = 'http://localhost:3000' + kind_org + '/' + list[i].entertainer_id;
+                        }
+                         %>
+                        <li>
+                            <a href= <%= link %> >
+                            <%= list[i].name %> 
+                            </a>
+                        </li>
+                    <%}%>
                 </ul>
             </main>
         </div>
