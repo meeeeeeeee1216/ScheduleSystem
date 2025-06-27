@@ -117,12 +117,14 @@ app.get("/show",(req,res) => {
 });
 
 //各ショー画面
+//ここの一回のDBリクエストでどうにかスケジュールデータまで抽出してくれ
 con.query('select show_id,name from entertainment_show;',function(error,response){
     if (error) throw error;
     for(let i = 0; i < response.length; i++){
         app.get("/show/" + response[i].show_id,(req,res) => {
             //URLから名前を拾ってhtmlは動的生成
-            res.render("show_home.ejs",{con:con,show_name:req.originalUrl});
+            //その人名前、ID、スケジュール（ショーと外部両方）をresponseから持ってきて送る感じにしたい
+            res.render("show_home.ejs",{con:con,show_name:response[i].name});
         });
     }
 });
