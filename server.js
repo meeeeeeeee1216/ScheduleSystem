@@ -115,11 +115,15 @@ app.get("/show",(req,res) => {
 });
 
 //各ショー画面
-con.query('select name from entertainment_show;',function(error,response){
+//役名一覧とショー一覧を同時に取得、後からそのショーの役名一覧を作ってフロントに送る
+//未完成というか実行できるか要確認
+con.query("select ES.name, roll.name from  roll as roll inner join entertainment_show as ES on ES.show_id = roll.show_id;",
+    function(error,response){
     if (error) throw error;
     for(let i = 0; i < response.length; i++){
         app.get("/show/" + response[i].name,(req,res) => {
             //URLから名前を拾ってhtmlは動的生成
+            //スケジュール情報を持ってくる
             res.render("show_home.ejs",{con:con,show_name:req.originalUrl});
         });
     }

@@ -41,8 +41,7 @@
                     }%>
                     <% con.query('SELECT name FROM ' + sql + ';',function(error,response){
                         for(let i = 0; i < response.length; i++){
-                            const name = response[i].name; 
-                            console.log(name); %>
+                            const name = response[i].name;  %>
                             <li>
                                 <%= name %> 
                             </li>
