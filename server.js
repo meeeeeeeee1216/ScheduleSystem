@@ -117,26 +117,18 @@ app.get("/show",(req,res) => {
 });
 
 //各ショー画面
-<<<<<<< HEAD
-//ここの一回のDBリクエストでどうにかスケジュールデータまで抽出してくれ
-con.query('select show_id,name from entertainment_show;',function(error,response){
-=======
 //役名一覧とショー一覧を同時に取得、後からそのショーの役名一覧を作ってフロントに送る
 //未完成というか実行できるか要確認
-con.query("select ES.name, roll.name from  roll as roll inner join entertainment_show as ES on ES.show_id = roll.show_id;",
+//属性の名前かぶってると上書きされるよそりゃそうだけど
+con.query("select * from roll as roll inner join entertainment_show as ES on ES.show_id = roll.show_id;",
     function(error,response){
->>>>>>> 9c153d464e6ca9ebf097234b2222c89af0a14ba6
     if (error) throw error;
     for(let i = 0; i < response.length; i++){
+        console.log(response);
         app.get("/show/" + response[i].show_id,(req,res) => {
             //URLから名前を拾ってhtmlは動的生成
-<<<<<<< HEAD
-            //その人名前、ID、スケジュール（ショーと外部両方）をresponseから持ってきて送る感じにしたい
-            res.render("show_home.ejs",{con:con,show_name:response[i].name});
-=======
             //スケジュール情報を持ってくる
-            res.render("show_home.ejs",{con:con,show_name:req.originalUrl});
->>>>>>> 9c153d464e6ca9ebf097234b2222c89af0a14ba6
+            res.render("show_home.ejs",{con:con,show_name:response[i].name});
         });
     }
 });

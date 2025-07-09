@@ -34,7 +34,6 @@
                     <% } %>
                 </h2>
                 <ul>
-<<<<<<< HEAD
                     <% for(let i = 0; i < list.length; i++){
                         if(kind_org === "/show"){
                             var link = 'http://localhost:3000' + kind_org + '/' + list[i].show_id;
@@ -48,21 +47,6 @@
                             </a>
                         </li>
                     <%}%>
-=======
-                    <% if(kind_org === "/show") {
-                        var sql = "entertainment_show";
-                    }else{
-                        var sql = "entertainer"; 
-                    }%>
-                    <% con.query('SELECT name FROM ' + sql + ';',function(error,response){
-                        for(let i = 0; i < response.length; i++){
-                            const name = response[i].name;  %>
-                            <li>
-                                <%= name %> 
-                            </li>
-                        <% }
-                    }); %>
->>>>>>> 9c153d464e6ca9ebf097234b2222c89af0a14ba6
                 </ul>
             </main>
         </div>
