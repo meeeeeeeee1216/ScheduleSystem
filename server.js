@@ -39,7 +39,8 @@ const con = mysql.createConnection({
     host: "localhost",
     user: "root",
     password: 'pass1234',
-    database: "SSS"
+    database: "SSS",
+    multipleStatements:true
 });
 
 
@@ -111,42 +112,49 @@ app.post("/sign-up/end",function(req,res){
 
 //ショー一覧画面
 app.get("/show",(req,res) => {
-    con.query("select show_id,name from entertainment_show;",function(error, response){
+    con.query("select show_id,show_name from entertainment_show;",function(error, response){
         res.render("list.ejs",{list: response,kind_org:req.originalUrl});
     })
 });
 
 //各ショー画面
 //役名一覧とショー一覧を同時に取得、後からそのショーの役名一覧を作ってフロントに送る
-//未完成というか実行できるか要確認
-//属性の名前かぶってると上書きされるよそりゃそうだけど
-con.query("select * from roll as roll inner join entertainment_show as ES on ES.show_id = roll.show_id;",
+//"select * from roll as roll inner join entertainment_show as ES on ES.show_id = roll.show_id;"
+con.query("select roll_name from roll;" + 
+    "select show_name,show_id from entertainment_show;",
     function(error,response){
     if (error) throw error;
-    for(let i = 0; i < response.length; i++){
-        console.log(response);
-        app.get("/show/" + response[i].show_id,(req,res) => {
+    console.log(response);
+    for(let i = 0; i < response[1].length; i++){
+        var rolls = []
+        app.get("/show/" + response[1][i].show_id,(req,res) => {
+            //このショーの役名を一覧にする
+            for(var t = 0 ; t < response[0].length; t ++){
+                if (response[0][t].show_id === response[1][i].show_id){
+                    rolls.push(response[0][t].roll_name);
+                }
+            }
             //URLから名前を拾ってhtmlは動的生成
             //スケジュール情報を持ってくる
-            res.render("show_home.ejs",{con:con,show_name:response[i].name});
+            res.render("show_home.ejs",{con:con,show_name:response[1][i].show_name,rolls:rolls});
         });
     }
 });
 
 //演者一覧画面
 app.get("/entertainer",(req,res) => {
-    con.query("select entertainer_id,name from entertainer;",function(error, response){
+    con.query("select entertainer_id,entertainer_name from entertainer;",function(error, response){
         res.render("list.ejs",{list: response,kind_org:req.originalUrl});
     })
 });
 
 //各演者画面
-con.query('select entertainer_id ,name from entertainer;',function(error,response){
+con.query('select entertainer_id ,entertainer_name from entertainer;',function(error,response){
     if (error) throw error;
     for(let i = 0; i < response.length; i++){
         app.get("/entertainer/" + response[i].entertainer_id,(req,res) => {
             //URLから名前を拾ってhtmlは動的生成
-            res.render("entertainer_home.ejs",{con:con,name:response[i].name});
+            res.render("entertainer_home.ejs",{con:con,name:response[i].entertainer_name});
         });
     }
 });
