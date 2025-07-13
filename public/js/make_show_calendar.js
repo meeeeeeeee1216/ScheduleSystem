@@ -1,7 +1,7 @@
-const body = document.getElementsByTagName("tbody");
-
+// const body = document.getElementsByTagName("thead");
 
 //日付とってくる
+var now = new Date();
 const today_Y = now.getFullYear();
 const today_M = now.getMonth();
 const lastdate = new Date(today_Y, today_M + 1, 0).getDate();
@@ -25,7 +25,8 @@ for(var i = 0; i < lastdate; i++){
     dates.push(document.createElement("th"))
     dates[i].innerText = today_M + 1 + "/" + dateArray[i];
     //縦書き
-    dates[i].style.writingMode = "vertical-lr";
+    // dates[i].style.writingMode = "vertical-rl";
+    head.appendChild(dates[i]);
 }
 
 

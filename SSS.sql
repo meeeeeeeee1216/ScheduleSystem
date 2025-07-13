@@ -12,7 +12,7 @@ authority tinyint not null);
 
 CREATE TABLE SSS.entertainment_show(
 show_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-name VARCHAR(30) NOT NULL,
+show_name VARCHAR(30) NOT NULL,
 administrator_id varchar(20) NOT NULL,
 FOREIGN KEY (administrator_id) references account(account_id));
 
@@ -25,7 +25,7 @@ FOREIGN KEY (account_id) references account(account_id));
 
 CREATE TABLE SSS.roll(
 roll_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-name varchar(30) NOT NULL,
+roll_name varchar(30) NOT NULL,
 show_id INT NOT NULL,
 memo text,
 FOREIGN KEY (show_id) references entertainment_show(show_id));
@@ -45,7 +45,7 @@ FOREIGN KEY (show_id) references entertainment_show(show_id));
 
 CREATE TABLE SSS.entertainer(
 entertainer_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-name VARCHAR(50) NOT NULL,
+entertainer_name VARCHAR(50) NOT NULL,
 image  TEXT);
 
 CREATE TABLE SSS.out_of_park_schedule(
@@ -73,7 +73,7 @@ INSERT INTO account(account_id, PW, SNS_id, bio, authority,sns) VALUE
 ('show1', 'show_pass1111','show1_sns',NULL,2,2),
 ('show2', 'show_pass2222','show2_sns',NULL,2,2);
 
-INSERT INTO entertainment_show (name,administrator_id)
+INSERT INTO entertainment_show (show_name,administrator_id)
 VALUE
 ('restaurant_show','show0'),('escape_show','show1');
 
@@ -82,22 +82,22 @@ VALUE
 (1,'show2'),
 (2,'show0');
 
-INSERT INTO roll (name,show_ID,memo)
+INSERT INTO roll (roll_name,show_ID,memo)
 VALUE
-('A役',1,NULL),	
-('B役',1,NULL),	
-('C役',1,NULL),	
-('A役',2,NULL),	
-('B役',2,NULL),	
-('C役',2,NULL),	
-('D役',2,NULL);
+('A',1,NULL),	
+('B',1,NULL),	
+('C',1,NULL),	
+('A',2,NULL),	
+('B',2,NULL),	
+('C',2,NULL),	
+('D',2,NULL);
 
 INSERT INTO irregular (short_name,detail)
 VALUE
-('通常開催',NULL),
-('機材キャンセル','音響装置故障'),
-('雷キャンセル','雷雲接近のため'),
-('アドリブ再開','演出機材故障のため');
+('normal',NULL),
+('machine cancel',NULL),
+('thunder cancel',NULL),
+('temporary suspension',NULL);
 
 INSERT INTO Time_Table (show_ID,D,T,irregular_ID)
 VALUE
@@ -114,7 +114,7 @@ VALUE
 (2,'2025-06-10','15:30:00',1),
 (2,'2025-06-10','16:45:00',1);
 
-INSERT INTO entertainer (name,image)
+INSERT INTO entertainer (entertainer_name,image)
 VALUE
 ('Ａさん',NULL),
 ('Ｂさん',NULL),

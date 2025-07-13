@@ -43,6 +43,8 @@ const con = mysql.createConnection({
     multipleStatements:true
 });
 
+con.query("SET NAMES 'utf8mb4';");
+
 
 //静的ファイルパス指定
 app.use("/public",express.static(path.join(__dirname,"/public")));
@@ -119,9 +121,13 @@ app.get("/show",(req,res) => {
 
 //各ショー画面
 //役名一覧とショー一覧を同時に取得、後からそのショーの役名一覧を作ってフロントに送る
-//"select * from roll as roll inner join entertainment_show as ES on ES.show_id = roll.show_id;"
-con.query("select roll_name from roll;" + 
-    "select show_name,show_id from entertainment_show;",
+con.query("select roll_name,show_id from roll;" + 
+    "select show_name,show_id from entertainment_show;" + 
+    "select  tt.d,tt.t,roll.roll_name,entertainer.entertainer_name,ES.show_name,ES.show_id\
+    from shift join entertainer using(entertainer_id) \
+    join roll using(roll_id) \
+    join entertainment_show as ES on ES.show_id = shift.show_id \
+    join time_table as tt using(tt_id);",
     function(error,response){
     if (error) throw error;
     console.log(response);
@@ -130,13 +136,21 @@ con.query("select roll_name from roll;" +
         app.get("/show/" + response[1][i].show_id,(req,res) => {
             //このショーの役名を一覧にする
             for(var t = 0 ; t < response[0].length; t ++){
-                if (response[0][t].show_id === response[1][i].show_id){
+                if (response[0][t].show_id == response[1][i].show_id){
                     rolls.push(response[0][t].roll_name);
                 }
             }
+            //シフトもこのショーだけにする
+            var shift = [];
+            for(var t=0; t<response[2].length; t++){
+                if(response[2][t].show_id == response[1][i].show_id){
+                    shift.push(response[2][t]);
+                }
+            }
+            console.log(shift);
             //URLから名前を拾ってhtmlは動的生成
-            //スケジュール情報を持ってくる
-            res.render("show_home.ejs",{con:con,show_name:response[1][i].show_name,rolls:rolls});
+            //どうやって表示させるか考えてない　もうちょっと送信前にフォーマット考えてくれ
+            res.render("show_home.ejs",{shift:shift,show_name:response[1][i].show_name,rolls:rolls});
         });
     }
 });
