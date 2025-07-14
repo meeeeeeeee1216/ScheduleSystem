@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>ショーシフト管理システム</title>
+    </head>
+    <body>
+        
+        <script src = "../public/js/make_header.js" type="text/javascript"></script>
+        <main>
+            <div class="title">
+                <h2><%= show_name %> シフト報告</h2>
+            </div>
+            <form action=<%= "http://localhost:3000/show/" + show_id + "report/end" method="post" name="form">
+                <div id="info">
+                    <p>ショー日時</p>
+                    <input type="datetime-loval" name="time">
+                </div>
+                <div id="shift">
+                    <p>キャスト名報告</p>
+                    <% rolls.forEach(element => { %>
+                        <p style="white-space: nowarp;"> <%= element %></p>
+                        <% for(var key in roll_cast){ %>
+                            <input type="radio" name = <%= element %> > <%= roll_cast[element] %>
+                        <%};%>
+                    <% });%>
+                </div>
+                <div id="other">
+                    <p>その他（情報訂正、デビューキャスト、新ポジション報告など）</p>
+                    <input type="textarea" name="other">
+                </div>
+                
+                <button name="send" type="submit">報告</button>
+            </form>
+            
+        </main>
+   </body>
+</html>

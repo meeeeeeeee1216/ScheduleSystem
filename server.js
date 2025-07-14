@@ -127,7 +127,8 @@ con.query("select roll_name,show_id from roll;" +
     from shift join entertainer using(entertainer_id) \
     join roll using(roll_id) \
     join entertainment_show as ES on ES.show_id = shift.show_id \
-    join time_table as tt using(tt_id);",
+    join time_table as tt using(tt_id);" + 
+    "select distinct roll_name,entertainer_name from Shift join roll using(roll_id) join entertainer using(entertainer_id);",
     function(error,response){
     if (error) throw error;
     console.log(response);
@@ -135,6 +136,8 @@ con.query("select roll_name,show_id from roll;" +
         var rolls = [];
         var shift = {};
         app.get("/show/" + response[1][i].show_id,(req,res) => {
+
+
             //このショーの役名を一覧にする
             for(var t = 0 ; t < response[0].length; t ++){
                 if (response[0][t].show_id == response[1][i].show_id){
@@ -148,9 +151,38 @@ con.query("select roll_name,show_id from roll;" +
                     shift[response[2][t].roll_name].push(response[2][t]);
                 }
             }
+            
+            //報告ページ
+            app.get("/show/" + response[1][i].show_id + "/report",(req,res) => {
+                res.render("show_report.ejs",{rolls:rolls,roll_cast:response[3], show_name:response[1][i].show_name,
+                    show_id:response[1][i].show_id
+                });
+            });
+
+            //報告受け取り
+            app.post("/show/" + response[1][i].show_id + "/report/end",(req,res) => {
+                //時間を登録する(登録済みをまだはじけてない)
+                con.query('insert into Time_table day_and_time values ?',req.body.time ,(error, res) => {})
+                con.query('select tt_id from Time_table where day_and_time = ?' ,req.body.time,(error, res) => {tt_id = res[0].tt_id})
+                delete req.body.time
+                //手入力フォーム
+                con.query("")
+                //役のid持ってくる
+                req.body.
+                con.query(
+                    'INSERT INTO account (tt_id,roll_id, show_id, entertainer_id) values (?,?,?,?)',
+                    [tt_id,roll_id,response[1][i].show_id,entertainer_id]
+                        ,(error, res) => {
+                            console.log("DB insert success")
+                        }
+                )
+            });
+
             //URLから名前を拾ってhtmlは動的生成
             //役で区分けじゃなくて日付で分けると簡略化できそうだよ～～～～～
-            res.render("show_home.ejs",{shift:shift,show_name:response[1][i].show_name,rolls:rolls});
+            res.render("show_home.ejs",{shift:shift,show_name:response[1][i].show_name,
+                show_id:response[1][i].show_id,rolls:rolls});
+            
         });
     }
 });
