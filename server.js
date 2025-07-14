@@ -132,24 +132,24 @@ con.query("select roll_name,show_id from roll;" +
     if (error) throw error;
     console.log(response);
     for(let i = 0; i < response[1].length; i++){
-        var rolls = []
+        var rolls = [];
+        var shift = {};
         app.get("/show/" + response[1][i].show_id,(req,res) => {
             //このショーの役名を一覧にする
             for(var t = 0 ; t < response[0].length; t ++){
                 if (response[0][t].show_id == response[1][i].show_id){
                     rolls.push(response[0][t].roll_name);
+                    shift[response[0][t].roll_name] = [];
                 }
             }
             //シフトもこのショーだけにする
-            var shift = [];
             for(var t=0; t<response[2].length; t++){
                 if(response[2][t].show_id == response[1][i].show_id){
-                    shift.push(response[2][t]);
+                    shift[response[2][t].roll_name].push(response[2][t]);
                 }
             }
-            console.log(shift);
             //URLから名前を拾ってhtmlは動的生成
-            //どうやって表示させるか考えてない　もうちょっと送信前にフォーマット考えてくれ
+            //役で区分けじゃなくて日付で分けると簡略化できそうだよ～～～～～
             res.render("show_home.ejs",{shift:shift,show_name:response[1][i].show_name,rolls:rolls});
         });
     }

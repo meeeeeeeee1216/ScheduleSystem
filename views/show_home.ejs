@@ -16,21 +16,28 @@
                 <h3 id="calendar_title"></h3>
                 <table border="2">
                     <thead>
-                        <!-- 今月の日付 -->
                         <tr id="calendar">
                             <th> 役/日</th>
+                            <!-- 日付生成 -->
                         </tr>
                     </thead>
                     <tbody>
                         <!-- 一行目はthでヘッダー扱いにして役名一覧 -->
-                        <% console.log(rolls); %>
-                        <% rolls.forEach(function(value,key) { %>
+                        <% for(var i = 0; i< rolls.length ; i++ ) {%>
                             <tr>
                                 <th>
-                                    <%= value %>
+                                    <%= rolls[i] %>
                                 </th>
+                                <!-- ここにシフトの内容を入れる -->
+                                 <% for(var t = 0; t < shift[rolls[i]].length; t++){%>
+                                 <td>
+                                    <%for(var day=1; )
+                                    <% if(day ==  shift[rolls[i]][t].d ){
+                                    }%>
+                                 </td>
+                                <%};%>
                             </tr>
-                        <% }); %>
+                            <% }; %>
                     </tbody>
 
             </div>
