@@ -166,7 +166,8 @@ con.query("select roll_name,show_id from roll;" +
                 con.query('select tt_id from Time_table where day_and_time = ?' ,req.body.time,(error, res) => {tt_id = res[0].tt_id})
                 delete req.body.time
                 //手入力フォーム
-                con.query("")
+                con.query("insert into notice (show_id,type_of_message,content) value ( ?,?,?)",
+                    (response[1][i].show_id,))
                 //役のid持ってくる
                 req.body.
                 con.query(

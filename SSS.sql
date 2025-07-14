@@ -64,6 +64,16 @@ FOREIGN KEY (roll_id) references roll(roll_id),
 FOREIGN KEY (entertainer_id) references entertainer(entertainer_id),
 FOREIGN KEY (show_id) references entertainment_show(show_id));
 
+CREATE TABLE SSS.notice(
+    notice_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    show_id INT not null,
+    type_of_message varchar(30) not null,
+    content text not null,
+    FOREIGN KEY (show_id) references entertainment_show(show_id)
+);
+
+
+
 
 -- レコード作成
 INSERT INTO account(account_id, PW, SNS_id, bio, authority,sns) VALUE 
@@ -146,3 +156,14 @@ VALUE
 (8,5,2,12),
 (8,6,2,13),
 (8,7,2,14);
+
+
+CREATE TABLE SSS.notice(
+    notice_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    account_id varchar(30) not null FOREIGN KEY,
+    type_of_message varchar(30) not null,
+    content text not null
+);
+INSERT INTO notice(show_id,type_of_message,content)
+VALUE
+()
