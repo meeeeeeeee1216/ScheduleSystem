@@ -123,7 +123,7 @@ app.get("/show",(req,res) => {
 //役名一覧とショー一覧を同時に取得、後からそのショーの役名一覧を作ってフロントに送る
 con.query("select roll_name,show_id,roll_id from roll;" + 
     "select show_name,show_id from entertainment_show;" + 
-    "select  tt.d,tt.t,roll.roll_name,entertainer.entertainer_name,ES.show_name,ES.show_id\
+    "select  tt.day_and_time,roll.roll_name,entertainer.entertainer_name,ES.show_name,ES.show_id\
     from shift join entertainer using(entertainer_id) \
     join roll using(roll_id) \
     join entertainment_show as ES on ES.show_id = shift.show_id \
@@ -131,11 +131,6 @@ con.query("select roll_name,show_id,roll_id from roll;" +
     "select distinct roll_name,entertainer_name,roll_id,entertainer_id from Shift join roll using(roll_id) join entertainer using(entertainer_id);",
     function(error,response){
     if (error) throw error;
-
-    var rolls = response[0];
-    var ES = response[1];
-
-    console.log(response);
     for(let i = 0; i < response[1].length; i++){
         var rolls = [];
         var shift = {};
@@ -146,13 +141,19 @@ con.query("select roll_name,show_id,roll_id from roll;" +
             for(var t = 0 ; t < response[0].length; t ++){
                 if (response[0][t].show_id == response[1][i].show_id){
                     rolls.push(response[0][t]);
-                    shift[response[0][t].roll_name] = [];
+                    //shift[response[0][t].roll_name] = [];
                 }
             }
             //シフトもこのショーだけにする
             for(var t=0; t<response[2].length; t++){
                 if(response[2][t].show_id == response[1][i].show_id){
-                    shift[response[2][t].roll_name].push(response[2][t]);
+                    //日時をカギにして登録したい
+                    if(response[2][t].day_and_time in shift){
+                    }else{
+                        shift[response[2][t].day_and_time] = {};
+                    }
+                    //その中にさらに役名を鍵にして役者名を登録
+                    shift[response[2][t].day_time][response[2][t].roll_name] = response[2][t].entertainer_name;
                 }
             }
             
@@ -189,7 +190,7 @@ con.query("select roll_name,show_id,roll_id from roll;" +
             //URLから名前を拾ってhtmlは動的生成
             //役で区分けじゃなくて日付で分けると簡略化できそうだよ～～～～～
             res.render("show_home.ejs",{shift:shift,show_name:response[1][i].show_name,
-                show_id:response[1][i].show_id,rolls:rolls});
+                show_id:response[1][i].show_id,rolls:rolls,shift:shift});
             
         });
     }

@@ -22,6 +22,10 @@
                         <tr id="calendar">
                             <th> 役/日</th>
                             <!-- 日付生成 -->
+                             <% for(var key in shift){ %>
+                                    <th style="writing-mode: vertical-rl;"> <%= key %> </th>
+                             <%};%>
+                             
                         </tr>
                     </thead>
                     <tbody>
@@ -32,15 +36,11 @@
                                     <%= rolls[i] %>
                                 </th>
                                 <!-- ここにシフトの内容を入れる -->
-                                 <% for(var t = 0; t < shift[rolls[i]].length; t++){%>
-                                 <td>
-                                    <%for(var day=1; )
-                                    <% if(day ==  shift[rolls[i]][t].d ){
-                                    }%>
-                                 </td>
+                                 <% for(var key in shift){ %>
+                                    <td> <%= shift[key][rolls[i]] %></td>
                                 <%};%>
                             </tr>
-                            <% }; %>
+                        <% }; %>
                     </tbody>
 
             </div>
