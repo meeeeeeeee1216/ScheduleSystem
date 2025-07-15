@@ -70,6 +70,13 @@ app.get("/sign-in",(req,res) => {
 app.post("/administrator",function(req,res){
     //  log(req.body);
     //アカウント照合
+    con.query("select count(*) from account where account_id = ? and PW = ?;",(req.body.account_id,req.body.PW),
+    function(error,resp){
+        if(error) throw error;
+        if(resp == 0){
+            res.
+        }
+    })
     //認証トークン生成
     //Coockieに保存
     //表示
@@ -79,7 +86,10 @@ app.post("/administrator",function(req,res){
 app.get("/administrator",(req,res) => {
     //ログイン状態チェック
     //ログアウトなら登録画面へ
-    res.sendFile(__dirname + "/public/html/administrator_page.html");
+    //自分が管理者のショー管理画面
+    con.query("select show_id,administrator_id from entertainment_show;",function(error, response){
+        res.render("list.ejs",{list: response,kind_org:req.originalUrl});
+    })
 });
 
 //管理アカウント申請
@@ -188,7 +198,6 @@ con.query("select roll_name,show_id,roll_id from roll;" +
             });
 
             //URLから名前を拾ってhtmlは動的生成
-            //役で区分けじゃなくて日付で分けると簡略化できそうだよ～～～～～
             res.render("show_home.ejs",{shift:shift,show_name:response[1][i].show_name,
                 show_id:response[1][i].show_id,rolls:rolls,shift:shift});
             
