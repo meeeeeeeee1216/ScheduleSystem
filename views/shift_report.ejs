@@ -20,13 +20,20 @@
                     <p>キャスト名報告</p>
                     <% rolls.forEach(element => { %>
                         <p style="white-space: nowarp;"> <%= element %></p>
-                        <% for(var key in roll_cast){ %>
-                            <input type="radio" name = <%= element %> > <%= roll_cast[element] %>
-                        <%};%>
+                        <% for(var i=0;i < roll_cast.length;i ++){%>
+                            <% if(element.roll_name == roll_cast[i].roll_name) {%>
+                                <input type="radio" name = <%= element.roll_id %> value = <%= roll_cast[i].entertainer_id %>> <%= roll_cast[i].entertainer_name %>
+                        <%}};%>
                     <% });%>
                 </div>
                 <div id="other">
                     <p>その他（情報訂正、デビューキャスト、新ポジション報告など）</p>
+                    <input type="radio" name="other_type" value = "correctuin"> シフト情報修正依頼
+                    <input type="radio" name="other_type" value = "debut"> 新キャストデビュー報告 
+                    <input type="radio" name="other_type" value = "new_position"> 新ポジション報告
+                    <input type="radio" name="other_type" value = "irregular_info"> 演出変更の情報提供
+                    <input type="radio" name="other_type" value = "irregular_info"> 演出変更の情報提供
+                     
                     <input type="textarea" name="other">
                 </div>
                 

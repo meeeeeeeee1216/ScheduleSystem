@@ -121,16 +121,20 @@ app.get("/show",(req,res) => {
 
 //各ショー画面
 //役名一覧とショー一覧を同時に取得、後からそのショーの役名一覧を作ってフロントに送る
-con.query("select roll_name,show_id from roll;" + 
+con.query("select roll_name,show_id,roll_id from roll;" + 
     "select show_name,show_id from entertainment_show;" + 
     "select  tt.d,tt.t,roll.roll_name,entertainer.entertainer_name,ES.show_name,ES.show_id\
     from shift join entertainer using(entertainer_id) \
     join roll using(roll_id) \
     join entertainment_show as ES on ES.show_id = shift.show_id \
     join time_table as tt using(tt_id);" + 
-    "select distinct roll_name,entertainer_name from Shift join roll using(roll_id) join entertainer using(entertainer_id);",
+    "select distinct roll_name,entertainer_name,roll_id,entertainer_id from Shift join roll using(roll_id) join entertainer using(entertainer_id);",
     function(error,response){
     if (error) throw error;
+
+    var rolls = response[0];
+    var ES = response[1];
+
     console.log(response);
     for(let i = 0; i < response[1].length; i++){
         var rolls = [];
@@ -141,7 +145,7 @@ con.query("select roll_name,show_id from roll;" +
             //このショーの役名を一覧にする
             for(var t = 0 ; t < response[0].length; t ++){
                 if (response[0][t].show_id == response[1][i].show_id){
-                    rolls.push(response[0][t].roll_name);
+                    rolls.push(response[0][t]);
                     shift[response[0][t].roll_name] = [];
                 }
             }
@@ -167,16 +171,19 @@ con.query("select roll_name,show_id from roll;" +
                 delete req.body.time
                 //手入力フォーム
                 con.query("insert into notice (show_id,type_of_message,content) value ( ?,?,?)",
-                    (response[1][i].show_id,))
-                //役のid持ってくる
-                req.body.
-                con.query(
-                    'INSERT INTO account (tt_id,roll_id, show_id, entertainer_id) values (?,?,?,?)',
-                    [tt_id,roll_id,response[1][i].show_id,entertainer_id]
-                        ,(error, res) => {
-                            console.log("DB insert success")
-                        }
-                )
+                    (response[1][i].show_id,req.body.other_type,req.body.other));
+                delete req.body.other_type,req.body.other
+                
+                //シフト情報以外削除できてる状態
+                for(var key in req.body){
+                    con.query(
+                        'INSERT INTO account (tt_id,roll_id, show_id, entertainer_id) values (?,?,?,?)',
+                        [tt_id,key,response[1][i].show_id,req.body[key]]
+                            ,(error, res) => {
+                                console.log("DB insert success")
+                            }
+                    )
+                }
             });
 
             //URLから名前を拾ってhtmlは動的生成
