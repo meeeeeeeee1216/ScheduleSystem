@@ -74,20 +74,27 @@ app.post("/administrator",function(req,res){
     function(error,resp){
         if(error) throw error;
         if(resp == 0){
-            res.
+            //ログイン失敗
+            res.writeHead(302, {'Location': 'http://localhost:3000/sign-in'});
+        }else{
+            //成功
+             //認証トークン生成
+            //Coockieに保存
+            //表示
+            con.query("select show_id,show_name,administrator_id from entertainment_show;",function(error, response){
+                res.render("list.ejs",{list: response,kind_org:req.originalUrl});
+            })
         }
     })
-    //認証トークン生成
-    //Coockieに保存
-    //表示
+   
 });
 
 //管理画面ホーム
 app.get("/administrator",(req,res) => {
     //ログイン状態チェック
-    //ログアウトなら登録画面へ
+    //ログアウトならログイン画面へ
     //自分が管理者のショー管理画面
-    con.query("select show_id,administrator_id from entertainment_show;",function(error, response){
+    con.query("select show_id,show_name,administrator_id from entertainment_show;",function(error, response){
         res.render("list.ejs",{list: response,kind_org:req.originalUrl});
     })
 });
@@ -133,20 +140,20 @@ app.get("/show",(req,res) => {
 //役名一覧とショー一覧を同時に取得、後からそのショーの役名一覧を作ってフロントに送る
 con.query("select roll_name,show_id,roll_id from roll;" + 
     "select show_name,show_id from entertainment_show;" + 
-    "select  tt.day_and_time,roll.roll_name,entertainer.entertainer_name,ES.show_name,ES.show_id\
+    "select  tt.day_and_time,roll.roll_name,entertainer.entertainer_name,ES.show_name,ES.show_id,tt.irregular_id,\
     from shift join entertainer using(entertainer_id) \
     join roll using(roll_id) \
     join entertainment_show as ES on ES.show_id = shift.show_id \
-    join time_table as tt using(tt_id);" + 
+    join time_table as tt using(tt_id) \
+    join irregular using(irregular_id);" + 
     "select distinct roll_name,entertainer_name,roll_id,entertainer_id from Shift join roll using(roll_id) join entertainer using(entertainer_id);",
     function(error,response){
+    //イレギュラーを直接TTテーブルに書きこんで備考出力できるようにしたいのでDBをつくりかえてください
     if (error) throw error;
     for(let i = 0; i < response[1].length; i++){
         var rolls = [];
         var shift = {};
         app.get("/show/" + response[1][i].show_id,(req,res) => {
-
-
             //このショーの役名を一覧にする
             for(var t = 0 ; t < response[0].length; t ++){
                 if (response[0][t].show_id == response[1][i].show_id){
@@ -188,7 +195,7 @@ con.query("select roll_name,show_id,roll_id from roll;" +
                 //シフト情報以外削除できてる状態
                 for(var key in req.body){
                     con.query(
-                        'INSERT INTO account (tt_id,roll_id, show_id, entertainer_id) values (?,?,?,?)',
+                        'INSERT INTO shift (tt_id,roll_id, show_id, entertainer_id) values (?,?,?,?)',
                         [tt_id,key,response[1][i].show_id,req.body[key]]
                             ,(error, res) => {
                                 console.log("DB insert success")
@@ -202,7 +209,13 @@ con.query("select roll_name,show_id,roll_id from roll;" +
                 show_id:response[1][i].show_id,rolls:rolls,shift:shift});
             
         });
-    }
+        //管理用ページ
+        app.get("/administrator/" + response[1][i].show_id,(req,res) => {
+            //シフト報告データの取得
+            res.render("show_administrator.ejs",{show_name:response[1][i].show_name,show_id:response[1][i].show_id});
+        });
+
+    };
 });
 
 //演者一覧画面

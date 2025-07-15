@@ -13,10 +13,9 @@
                 <h2><%= show_name %></h2>
             </div>
             <div>
-                <p><a href= <%= "http://localhost:3000/" + show_id + "/report" %>> </a></p>
+                <p><a href= <%= "http://localhost:3000/show/" + show_id + "/report" %>> シフト報告はこちらから</a></p>
             </div>
-            <div class="main">
-                <h3 id="calendar_title"></h3>
+            <div class="shift-calender">
                 <table border="2">
                     <thead>
                         <tr id="calendar">
@@ -41,8 +40,20 @@
                                 <%};%>
                             </tr>
                         <% }; %>
+                        <!-- 備考欄 -->
+                        <tr>
+                            <th>備考</th>
+                            <% for(var key in shift){ %>
+                                <td></td>
+                            <%};%>
+                        </tr>
                     </tbody>
-
+            </div>
+            <div class="admi-info">
+                <h3>管理者からのお知らせ</h3>
+                <table>
+                    <!-- テーブルでお知らせ一覧表示 -->
+                </table>
             </div>
         </main>
    </body>

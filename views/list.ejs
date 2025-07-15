@@ -19,8 +19,10 @@
         <% var kind = "";
             if (kind_org === "/show"){
                 kind = "show";
-            }else{
+            }else if(kind_org === "/entertainer"){
                 kind = "entertainer"
+            }else if(kind_org === "/administrator"){
+                kind = "administrator"
             }
         %>
 
@@ -29,8 +31,10 @@
                 <h2 id="sub-title">
                     <% if(kind_org === "/show") { %> 
                         ショー一覧
-                    <% } else{ %>
+                    <% } else if(kind_org === "/entertainer"){ %>
                         キャスト一覧
+                    <% } else if(kind_org === "/administrator"){ %>
+                        管理者ページ
                     <% } %>
                 </h2>
                 <ul>
@@ -38,9 +42,12 @@
                         if(kind_org === "/show"){
                             var link = 'http://localhost:3000' + kind_org + '/' + list[i].show_id;
                             var name = list[i].show_name
-                        }else{
+                        }else if(kind_org === "/entertainer"){
                             var link = 'http://localhost:3000' + kind_org + '/' + list[i].entertainer_id;
                             var name = list[i].entertainer_name
+                        }else if(kind_org === "/administrator"){
+                            var link = 'http://localhost:3000' + kind_org + '/' + list[i].show_id;
+                            var name = list[i].show_name
                         }%>
                         <li>
                             <a href= <%= link %> >

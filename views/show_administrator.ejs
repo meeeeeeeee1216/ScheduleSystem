@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>ショーシフト管理システム</title>
+    </head>
+    <body>
+        
+        <script src = "../public/js/make_header.js" type="text/javascript"></script>
+        <main>
+            
+            <div class="title">
+                <h2><%= show_name %> 管理ページ</h2>
+            </div>
+            <div>
+                <p><a href= <%= "http://localhost:3000/show/" + show_id %>> 公開ページはこちらから</a></p>
+            </div>
+            <div class="main">
+                <h3>報告されたシフト一覧</h3>
+                <!-- 承認と修正ができる、表形式で出せるとよい、その他で入力されたものもここに表示 -->
+                <h3>シフト手入力（送信を押すとすぐに公開されます）</h3>
+                <!-- 入力用のフォーム、役名から手入力にします？
+                 それか、一般入力用のページに飛ばして、ログイン判定で即公開みたいなことする？ -->
+                <h3>報告フォーム編集</h3>
+                <!-- デビュー、ポジション追加など -->
+                <h3>お知らせ追加</h3>
+                <!-- 更新のお知らせなど -->
+            </div>
+        </main>
+   </body>
+</html>
