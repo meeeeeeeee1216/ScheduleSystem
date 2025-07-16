@@ -237,7 +237,7 @@ con.query("select roll_name,show_id,roll_id from roll;" +
         //管理用ページ
         app.get("/administrator/" + response[1][i].show_id,(req,res) => {
             //シフト報告データの取得
-            con.query("select N.type_of_message,N.content,R.time_and_day,R.shift \
+            con.query("select N.type_of_message,N.content,R.time_and_day,R.shift,R.report_id \
                  from notice as N join report as R using(report_id) where show_id = ?;",
                 (response[1][i].show_id),
                 (e,r)=>{
@@ -247,9 +247,9 @@ con.query("select roll_name,show_id,roll_id from roll;" +
                     });
         });
 
-        //報告承認用
-        app.post("/administrator/" + response[1][i].show_id,(req,res) => {
-
+        //報告承認用(id部分書き換えてね)
+        app.post("/administrator/" + response[1][i].show_id + "/" + "report_id",(req,res) => {
+            res.render("report_shift_ditail.ejs",{});
         });
 
     };

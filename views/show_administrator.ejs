@@ -29,13 +29,12 @@
                     </thead>
                     <tbody>
                         <% notices.forEach(element => { %>
-                            <td><%= element.type_of_message %></td>
-                            <td><%= element.time_and_day %></td>
-                            <td><%= element.shift %></td>
-                            <td><%= element.content %></td>
-                            <td><button name="send" type="submit">そのまま公開</button></td>
-                            <td><button name="send" type="submit">編集してから公開</button></td>
-                            <td><button name="send" type="submit">削除</button></td>
+                            <tr>
+                                <td><%= element.type_of_message %></td>
+                                <td><%= element.time_and_day %></td>
+                                <td><a href= <%= "http://localhost:3000/administrator/" 
+                                + show_id + "/" + element.report_id%> >詳細表示</a></td>
+                            </tr>
                         <% }); %>
 
                     </tbody>
