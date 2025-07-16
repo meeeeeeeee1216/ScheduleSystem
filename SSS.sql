@@ -53,6 +53,7 @@ day DATE NOT NULL,
 PRIMARY KEY (entertainer_id, day),
 FOREIGN KEY (entertainer_id) references entertainer(entertainer_id));
 
+-- 表示されるシフトの情報だけを入れたい
 CREATE TABLE SSS.shift(
 tt_id INT NOT NULL,
 roll_id INT NOT NULL,
@@ -64,12 +65,24 @@ FOREIGN KEY (roll_id) references roll(roll_id),
 FOREIGN KEY (entertainer_id) references entertainer(entertainer_id),
 FOREIGN KEY (show_id) references entertainment_show(show_id));
 
+-- 
 CREATE TABLE SSS.notice(
     notice_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     show_id INT not null,
     type_of_message varchar(30) not null,
-    content text not null,
+    content text,
+    report_id INT,
     FOREIGN KEY (show_id) references entertainment_show(show_id)
+    FOREIGN KEY (report_id) references report(report_id)
+);
+
+-- コードだけ書いてまだデータに入れてないよ～
+-- shift -> {'A役':'〇さん', ...} idにしない
+CRATE TABLE SSS.report(
+    report_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    shift JSON NOT NULL
+    time_and_day DATETIME NOT NULL,
+    show_id INT
 );
 
 
@@ -158,12 +171,3 @@ VALUE
 (8,7,2,14);
 
 
-CREATE TABLE SSS.notice(
-    notice_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    account_id varchar(30) not null FOREIGN KEY,
-    type_of_message varchar(30) not null,
-    content text not null
-);
-INSERT INTO notice(show_id,type_of_message,content)
-VALUE
-()

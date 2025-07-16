@@ -183,25 +183,50 @@ con.query("select roll_name,show_id,roll_id from roll;" +
 
             //報告受け取り
             app.post("/show/" + response[1][i].show_id + "/report/end",(req,res) => {
-                //時間を登録する(登録済みをまだはじけてない)
-                con.query('insert into Time_table day_and_time values ?',req.body.time ,(error, res) => {})
-                con.query('select tt_id from Time_table where day_and_time = ?' ,req.body.time,(error, res) => {tt_id = res[0].tt_id})
-                delete req.body.time
-                //手入力フォーム
-                con.query("insert into notice (show_id,type_of_message,content) value ( ?,?,?)",
-                    (response[1][i].show_id,req.body.other_type,req.body.other));
-                delete req.body.other_type,req.body.other
-                
-                //シフト情報以外削除できてる状態
-                for(var key in req.body){
-                    con.query(
-                        'INSERT INTO shift (tt_id,roll_id, show_id, entertainer_id) values (?,?,?,?)',
-                        [tt_id,key,response[1][i].show_id,req.body[key]]
-                            ,(error, res) => {
-                                console.log("DB insert success")
-                            }
-                    )
+                var t = req.body.time;
+                var type = req.body.other_type
+                var other_content = null;
+                if(type != "only_shift"){
+                    other_content = req.body.other_content;
                 }
+                delete req.body.time,req.body.other_type,req.body.other_content
+
+                //シフト報告が含まれる
+                var report_id = null;
+                if(req.body != {}){
+                    con.query('insert into report (shift,time_and_day,show_id) value (?,?,?);',
+                        (req.body,t,response[1][i].show_id),(error,res) => {
+                            if (error) throw error;
+                        })
+                    con.query('select last_insert_id();',(e,r) => {
+                        report_id = r;
+                    })
+                }
+                con.query('insert into notice (show_id,type_of_message,content,report_id) value (?,?,?,?);',
+                    (response[1][i].show_id,type,other_content,r),(e,r) =>{
+                        if (e) throw e;
+                    }
+                )
+
+                // //時間を登録する(登録済みをまだはじけてない)
+                // con.query('insert into Time_table day_and_time values ?',req.body.time ,(error, res) => {})
+                // con.query('select tt_id from Time_table where day_and_time = ?' ,req.body.time,(error, res) => {tt_id = res[0].tt_id})
+                // delete req.body.time
+                // //手入力フォーム
+                // con.query("insert into notice (show_id,type_of_message,content) value ( ?,?,?)",
+                //     (response[1][i].show_id,req.body.other_type,req.body.other));
+                // delete req.body.other_type,req.body.other
+                
+                // //シフト情報以外削除できてる状態
+                // for(var key in req.body){
+                //     con.query(
+                //         'INSERT INTO shift (tt_id,roll_id, show_id, entertainer_id) values (?,?,?,?)',
+                //         [tt_id,key,response[1][i].show_id,req.body[key]]
+                //             ,(error, res) => {
+                //                 console.log("DB insert success")
+                //             }
+                //     )
+                // }
             });
 
             //URLから名前を拾ってhtmlは動的生成
@@ -212,7 +237,19 @@ con.query("select roll_name,show_id,roll_id from roll;" +
         //管理用ページ
         app.get("/administrator/" + response[1][i].show_id,(req,res) => {
             //シフト報告データの取得
-            res.render("show_administrator.ejs",{show_name:response[1][i].show_name,show_id:response[1][i].show_id});
+            con.query("select N.type_of_message,N.content,R.time_and_day,R.shift \
+                 from notice as N join report as R using(report_id) where show_id = ?;",
+                (response[1][i].show_id),
+                (e,r)=>{
+                    res.render("show_administrator.ejs"
+                    ,{show_name:response[1][i].show_name,show_id:response[1][i].show_id,
+                        notices:r});
+                    });
+        });
+
+        //報告承認用
+        app.post("/administrator/" + response[1][i].show_id,(req,res) => {
+
         });
 
     };

@@ -16,8 +16,30 @@
                 <p><a href= <%= "http://localhost:3000/show/" + show_id %>> 公開ページはこちらから</a></p>
             </div>
             <div class="main">
-                <h3>報告されたシフト一覧</h3>
+                <h3>報告一覧</h3>
                 <!-- 承認と修正ができる、表形式で出せるとよい、その他で入力されたものもここに表示 -->
+                <table id="notice-list">
+                    <thead>
+                        <tr>
+                            <th>種類</th>
+                            <th>ショー日時</th>
+                            <th>シフト</th>
+                            <th>その他記入事項</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% notices.forEach(element => { %>
+                            <td><%= element.type_of_message %></td>
+                            <td><%= element.time_and_day %></td>
+                            <td><%= element.shift %></td>
+                            <td><%= element.content %></td>
+                            <td><button name="send" type="submit">そのまま公開</button></td>
+                            <td><button name="send" type="submit">編集してから公開</button></td>
+                            <td><button name="send" type="submit">削除</button></td>
+                        <% }); %>
+
+                    </tbody>
+                </table>
                 <h3>シフト手入力（送信を押すとすぐに公開されます）</h3>
                 <!-- 入力用のフォーム、役名から手入力にします？
                  それか、一般入力用のページに飛ばして、ログイン判定で即公開みたいなことする？ -->
