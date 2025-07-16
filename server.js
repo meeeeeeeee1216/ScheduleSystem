@@ -153,6 +153,7 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
                 let roll_res = res2[0];
                 let shift_res = res2[1];
 
+                //各ショーホーム画面（シフト表示）
                 //shift rolls 辞書のまま
                 //フロント側で形式を整えて表示
                 app.get("/show/" + show.show_id,(req,res) => {
@@ -160,6 +161,7 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
                         show_name:show.show_name,show_id:show.show_id});
                 });
                 
+                //報告画面
                 app.get("/show/" + show.show_id + "/report",(req,res) => {
                     con.query("select distinct roll_name,entertainer_name,roll_id,entertainer_id \
                         from Shift join roll using(roll_id) join entertainer using(entertainer_id);"
@@ -169,6 +171,16 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
                                 rolls:roll_res,roll_cast:roll_cast_res});
                         });
                 });
+
+                //報告受け取り
+
+                //各ショーページ管理画面ホーム
+
+                //報告詳細（承認・編集・削除）
+
+                //シフト編集画面
+
+
 
             });
     });
