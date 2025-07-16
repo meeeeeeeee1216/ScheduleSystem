@@ -11,30 +11,35 @@
             <div class="title">
                 <h2><%= show_name %> シフト報告</h2>
             </div>
-            <form action=<%= "http://localhost:3000/show/" + show_id + "report/end" method="post" name="form">
+            <form action=<%= "http://localhost:3000/show/" + show_id + "report/end" %> 
+                method="post" name="form">
                 <div id="info">
-                    <p>ショー日時</p>
-                    <input type="datetime-loval" name="time">
+                    <p>＜ショー日時＞</p>
+                    <input type="datetime-local" name="time" require>
                 </div>
                 <div id="shift">
-                    <p>キャスト名報告</p>
+                    <p>＜キャスト名報告＞</p>
                     <% rolls.forEach(element => { %>
-                        <p style="white-space: nowarp;"> <%= element %></p>
+                        <p style="display:inline-block"> <%= element.roll_name %></p>
                         <% for(var i=0;i < roll_cast.length;i ++){%>
                             <% if(element.roll_name == roll_cast[i].roll_name) {%>
-                                <input type="radio" name = <%= element.roll_id %> value = <%= roll_cast[i].entertainer_id %>> <%= roll_cast[i].entertainer_name %>
+                                <input type="radio" name = <%= element.roll_id %> 
+                                value = <%= roll_cast[i].entertainer_id %>>
+                                 <%= roll_cast[i].entertainer_name %>
                         <%}};%>
+                        <br>
                     <% });%>
                 </div>
                 <div id="other">
                     <p>その他（情報訂正、デビューキャスト、新ポジション報告など）</p>
-                    <input type="radio" name="other_type" value = "only_shift" checked="true"> その他なし、シフト報告のみ
-                    <input type="radio" name="other_type" value = "correction"> シフト情報修正依頼
-                    <input type="radio" name="other_type" value = "debut"> 新キャストデビュー報告 
-                    <input type="radio" name="other_type" value = "new_position"> 新ポジション報告
-                    <input type="radio" name="other_type" value = "irregular_info"> 演出変更の情報提供
-                     
-                    <input type="textarea" name="other">
+                    <input type="radio" name="other_type" value = "only_shift" checked="true"> 
+                    その他なし、シフト報告のみ<br>
+                    <input type="radio" name="other_type" value = "correction"> シフト情報修正依頼<br>
+                    <input type="radio" name="other_type" value = "debut"> 新キャストデビュー報告 <br>
+                    <input type="radio" name="other_type" value = "new_position"> 新ポジション報告<br>
+                    <input type="radio" name="other_type" value = "irregular_info"> 演出変更の情報提供<br>
+                    <br>
+                    <textarea name="other" rows="8" cols="50"></textarea>
                 </div>
                 
                 <button name="send" type="submit">報告</button>

@@ -70,7 +70,7 @@ app.get("/sign-in",(req,res) => {
 app.post("/administrator",function(req,res){
     //  log(req.body);
     //アカウント照合
-    con.query("select count(*) from account where account_id = ? and PW = ?;",(req.body.account_id,req.body.PW),
+    con.query("select count(*) from account where account_id = ? and PW = ?;",[req.body.account_id,req.body.PW],
     function(error,resp){
         if(error) throw error;
         if(resp == 0){
@@ -137,123 +137,161 @@ app.get("/show",(req,res) => {
 });
 
 //各ショー画面
-//役名一覧とショー一覧を同時に取得、後からそのショーの役名一覧を作ってフロントに送る
-con.query("select roll_name,show_id,roll_id from roll;" + 
-    "select show_name,show_id from entertainment_show;" + 
-    "select  tt.day_and_time,roll.roll_name,entertainer.entertainer_name,ES.show_name,ES.show_id,tt.irregular_id,\
-    from shift join entertainer using(entertainer_id) \
-    join roll using(roll_id) \
-    join entertainment_show as ES on ES.show_id = shift.show_id \
-    join time_table as tt using(tt_id) \
-    join irregular using(irregular_id);" + 
-    "select distinct roll_name,entertainer_name,roll_id,entertainer_id from Shift join roll using(roll_id) join entertainer using(entertainer_id);",
-    function(error,response){
-    //イレギュラーを直接TTテーブルに書きこんで備考出力できるようにしたいのでDBをつくりかえてください
-    if (error) throw error;
-    for(let i = 0; i < response[1].length; i++){
-        var rolls = [];
-        var shift = {};
-        app.get("/show/" + response[1][i].show_id,(req,res) => {
-            //このショーの役名を一覧にする
-            for(var t = 0 ; t < response[0].length; t ++){
-                if (response[0][t].show_id == response[1][i].show_id){
-                    rolls.push(response[0][t]);
-                    //shift[response[0][t].roll_name] = [];
-                }
-            }
-            //シフトもこのショーだけにする
-            for(var t=0; t<response[2].length; t++){
-                if(response[2][t].show_id == response[1][i].show_id){
-                    //日時をカギにして登録したい
-                    if(response[2][t].day_and_time in shift){
-                    }else{
-                        shift[response[2][t].day_and_time] = {};
-                    }
-                    //その中にさらに役名を鍵にして役者名を登録
-                    shift[response[2][t].day_time][response[2][t].roll_name] = response[2][t].entertainer_name;
-                }
-            }
-            
-            //報告ページ
-            app.get("/show/" + response[1][i].show_id + "/report",(req,res) => {
-                res.render("show_report.ejs",{rolls:rolls,roll_cast:response[3], show_name:response[1][i].show_name,
-                    show_id:response[1][i].show_id
+con.query("select * from entertainment_show;",(e0,show_res)=>{
+    if(e0) throw e0;
+    show_res.forEach(show => {
+        //このショーの役名一覧とシフトを取得
+        con.query("select roll_name,roll_id from roll where show_id = ?;" + 
+        "select tt.day_and_time,roll.roll_name,entertainer.entertainer_name,ES.show_name \
+        from shift join entertainer using(entertainer_id) \
+        join roll using(roll_id) \
+        join entertainment_show as ES on ES.show_id = shift.show_id \
+        join time_table as tt using(tt_id) \
+        where shift.show_id = ?;"
+            ,[show.show_id,show.show_id]
+            ,(e1,res2)=>{
+                let roll_res = res2[0];
+                let shift_res = res2[1];
+
+                //shift rolls 辞書のまま
+                //フロント側で形式を整えて表示
+                app.get("/show/" + show.show_id,(req,res) => {
+                    res.render("show_home.ejs",{shift_res:shift_res,rolls:roll_res,
+                        show_name:show.show_name,show_id:show.show_id});
                 });
-            });
-
-            //報告受け取り
-            app.post("/show/" + response[1][i].show_id + "/report/end",(req,res) => {
-                var t = req.body.time;
-                var type = req.body.other_type
-                var other_content = null;
-                if(type != "only_shift"){
-                    other_content = req.body.other_content;
-                }
-                delete req.body.time,req.body.other_type,req.body.other_content
-
-                //シフト報告が含まれる
-                var report_id = null;
-                if(req.body != {}){
-                    con.query('insert into report (shift,time_and_day,show_id) value (?,?,?);',
-                        (req.body,t,response[1][i].show_id),(error,res) => {
-                            if (error) throw error;
-                        })
-                    con.query('select last_insert_id();',(e,r) => {
-                        report_id = r;
-                    })
-                }
-                con.query('insert into notice (show_id,type_of_message,content,report_id) value (?,?,?,?);',
-                    (response[1][i].show_id,type,other_content,r),(e,r) =>{
-                        if (e) throw e;
-                    }
-                )
-
-                // //時間を登録する(登録済みをまだはじけてない)
-                // con.query('insert into Time_table day_and_time values ?',req.body.time ,(error, res) => {})
-                // con.query('select tt_id from Time_table where day_and_time = ?' ,req.body.time,(error, res) => {tt_id = res[0].tt_id})
-                // delete req.body.time
-                // //手入力フォーム
-                // con.query("insert into notice (show_id,type_of_message,content) value ( ?,?,?)",
-                //     (response[1][i].show_id,req.body.other_type,req.body.other));
-                // delete req.body.other_type,req.body.other
                 
-                // //シフト情報以外削除できてる状態
-                // for(var key in req.body){
-                //     con.query(
-                //         'INSERT INTO shift (tt_id,roll_id, show_id, entertainer_id) values (?,?,?,?)',
-                //         [tt_id,key,response[1][i].show_id,req.body[key]]
-                //             ,(error, res) => {
-                //                 console.log("DB insert success")
-                //             }
-                //     )
-                // }
+                app.get("/show/" + show.show_id + "/report",(req,res) => {
+                    con.query("select distinct roll_name,entertainer_name,roll_id,entertainer_id \
+                        from Shift join roll using(roll_id) join entertainer using(entertainer_id);"
+                        ,(e,roll_cast_res) =>{
+                            res.render("shift_report.ejs",
+                            {show_name:show.show_name,show_id:show.show_id,
+                                rolls:roll_res,roll_cast:roll_cast_res});
+                        });
+                });
+
             });
+    });
+})
 
-            //URLから名前を拾ってhtmlは動的生成
-            res.render("show_home.ejs",{shift:shift,show_name:response[1][i].show_name,
-                show_id:response[1][i].show_id,rolls:rolls,shift:shift});
+
+//これ、作り直しで…
+// con.query("select roll_name,show_id,roll_id from roll;" + 
+//     "select show_name,show_id from entertainment_show;" + 
+//     "select  tt.day_and_time,roll.roll_name,entertainer.entertainer_name,ES.show_name,ES.show_id,tt.irregular_id,\
+//     from shift join entertainer using(entertainer_id) \
+//     join roll using(roll_id) \
+//     join entertainment_show as ES on ES.show_id = shift.show_id \
+//     join time_table as tt using(tt_id) \
+//     join irregular using(irregular_id);" + 
+//     "select distinct roll_name,entertainer_name,roll_id,entertainer_id from Shift join roll using(roll_id) join entertainer using(entertainer_id);",
+//     function(error,response){
+//     //イレギュラーを直接TTテーブルに書きこんで備考出力できるようにしたいのでDBをつくりかえてください
+//     if (error) throw error;
+//     for(let i = 0; i < response[1].length; i++){
+//         var rolls = [];
+//         var shift = {};
+//         app.get("/show/" + response[1][i].show_id,(req,res) => {
+//             //このショーの役名を一覧にする
+//             for(var t = 0 ; t < response[0].length; t ++){
+//                 if (response[0][t].show_id == response[1][i].show_id){
+//                     rolls.push(response[0][t]);
+//                     //shift[response[0][t].roll_name] = [];
+//                 }
+//             }
+//             //シフトもこのショーだけにする
+//             for(var t=0; t<response[2].length; t++){
+//                 if(response[2][t].show_id == response[1][i].show_id){
+//                     //日時をカギにして登録したい
+//                     if(response[2][t].day_and_time in shift){
+//                     }else{
+//                         shift[response[2][t].day_and_time] = {};
+//                     }
+//                     //その中にさらに役名を鍵にして役者名を登録
+//                     shift[response[2][t].day_time][response[2][t].roll_name] = response[2][t].entertainer_name;
+//                 }
+//             }
             
-        });
-        //管理用ページ
-        app.get("/administrator/" + response[1][i].show_id,(req,res) => {
-            //シフト報告データの取得
-            con.query("select N.type_of_message,N.content,R.time_and_day,R.shift,R.report_id \
-                 from notice as N join report as R using(report_id) where show_id = ?;",
-                (response[1][i].show_id),
-                (e,r)=>{
-                    res.render("show_administrator.ejs"
-                    ,{show_name:response[1][i].show_name,show_id:response[1][i].show_id,
-                        notices:r});
-                    });
-        });
+//             //報告ページ
+//             app.get("/show/" + response[1][i].show_id + "/report",(req,res) => {
+//                 res.render("show_report.ejs",{rolls:rolls,roll_cast:response[3], show_name:response[1][i].show_name,
+//                     show_id:response[1][i].show_id
+//                 });
+//             });
 
-        //報告承認用(id部分書き換えてね)
-        app.post("/administrator/" + response[1][i].show_id + "/" + "report_id",(req,res) => {
-            res.render("report_shift_ditail.ejs",{});
-        });
+//             //報告受け取り
+//             app.post("/show/" + response[1][i].show_id + "/report/end",(req,res) => {
+//                 var t = req.body.time;
+//                 var type = req.body.other_type
+//                 var other_content = null;
+//                 if(type != "only_shift"){
+//                     other_content = req.body.other_content;
+//                 }
+//                 delete req.body.time,req.body.other_type,req.body.other_content
 
-    };
-});
+//                 //シフト報告が含まれる
+//                 var report_id = null;
+//                 if(req.body != {}){
+//                     con.query('insert into report (shift,time_and_day,show_id) value (?,?,?);',
+//                         [req.body,t,response[1][i].show_id],(error,res) => {
+//                             if (error) throw error;
+//                         })
+//                     con.query('select last_insert_id();',(e,r) => {
+//                         report_id = r;
+//                     })
+//                 }
+//                 con.query('insert into notice (show_id,type_of_message,content,report_id) value (?,?,?,?);',
+//                     [response[1][i].show_id,type,other_content,r],(e,r) =>{
+//                         if (e) throw e;
+//                     }
+//                 )
+
+//                 // //時間を登録する(登録済みをまだはじけてない)
+//                 // con.query('insert into Time_table day_and_time values ?',req.body.time ,(error, res) => {})
+//                 // con.query('select tt_id from Time_table where day_and_time = ?' ,req.body.time,(error, res) => {tt_id = res[0].tt_id})
+//                 // delete req.body.time
+//                 // //手入力フォーム
+//                 // con.query("insert into notice (show_id,type_of_message,content) value ( ?,?,?)",
+//                 //     (response[1][i].show_id,req.body.other_type,req.body.other));
+//                 // delete req.body.other_type,req.body.other
+                
+//                 // //シフト情報以外削除できてる状態
+//                 // for(var key in req.body){
+//                 //     con.query(
+//                 //         'INSERT INTO shift (tt_id,roll_id, show_id, entertainer_id) values (?,?,?,?)',
+//                 //         [tt_id,key,response[1][i].show_id,req.body[key]]
+//                 //             ,(error, res) => {
+//                 //                 console.log("DB insert success")
+//                 //             }
+//                 //     )
+//                 // }
+//             });
+
+//             //URLから名前を拾ってhtmlは動的生成
+//             res.render("show_home.ejs",{shift:shift,show_name:response[1][i].show_name,
+//                 show_id:response[1][i].show_id,rolls:rolls,shift:shift});
+            
+//         });
+//         //管理用ページ
+//         app.get("/administrator/" + response[1][i].show_id,(req,res) => {
+//             //シフト報告データの取得
+//             con.query("select N.type_of_message,N.content,R.time_and_day,R.shift,R.report_id \
+//                  from notice as N join report as R using(report_id) where show_id = ?;",
+//                 [response[1][i].show_id],
+//                 (e,r)=>{
+//                     res.render("show_administrator.ejs"
+//                     ,{show_name:response[1][i].show_name,show_id:response[1][i].show_id,
+//                         notices:r});
+//                     });
+//         });
+
+//         //報告承認用(id部分書き換えてね)
+//         app.post("/administrator/" + response[1][i].show_id + "/" + "report_id",(req,res) => {
+//             res.render("report_shift_ditail.ejs",{});
+//         });
+
+//     };
+// });
 
 //演者一覧画面
 app.get("/entertainer",(req,res) => {
