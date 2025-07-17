@@ -30,6 +30,7 @@
                     <tbody>
                         <% notices.forEach(element => { %>
                             <tr>
+                                <td><%= element.notice_id %></td>
                                 <td><%= element.type_of_message %></td>
                                 <td><%= element.time_and_day %></td>
                                 <td><a href= <%= "http://localhost:3000/administrator/" 

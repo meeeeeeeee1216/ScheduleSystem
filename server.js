@@ -173,10 +173,52 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
                 });
 
                 //報告受け取り
+                app.post("/show/" + show.show_id + "/report/end",(req,res) => {
+                    //報告種別、ショーの日時、手入力欄を削除してreq.bodyにシフト情報だけ残す
+                    var t = req.body.time;
+                    var type = req.body.other_type
+                    var other_content = null;
+                    if(type != "only_shift"){
+                        other_content = req.body.other_content;
+                    }
+                    delete req.body.time,req.body.other_type,req.body.other_content
 
-                //各ショーページ管理画面ホーム
+                    //DBに登録
+                    //shift
+                    var report_id = null;
+                    //  シフト報告が含まれている報告だけshiftテーブルに登録する
+                    if(req.body != {}){
+                        con.query('insert into report (shift,time_and_day,show_id) value (?,?,?);',
+                            [req.body,t,response[1][i].show_id],(error,r) => {
+                                if (error) throw error;
+                        });
+                        //登録したレコードのIDを取得
+                        con.query('select last_insert_id();',(e,r) => {
+                            report_id = r;
+                        });
+                    };
+                    //notice
+                    con.query('insert into notice (show_id,type_of_message,content,report_id) value (?,?,?,?);',
+                        [show.show_id,type,other_content,r],(e,r) =>{
+                            if (e) throw e;
+                        }
+                    );
+                    res.sendFile(__dirname + "/public/html/shift_report_end.html")
+                });
 
-                //報告詳細（承認・編集・削除）
+                //各ショーページ管理画面ホーム(削除はここでできる)
+                app.get("/administrator/" + show.show_id,(req,res) => {
+                    con.query("select N.notice_id,N.type_of_message,N.content,R.time_and_day,R.shift,R.report_id \
+                    from notice as N join report as R using(report_id) where show_id = ?;",
+                    [response[1][i].show_id],
+                    (e,r)=>{
+                        res.render("show_administrator.ejs"
+                        ,{show_name:show.show_name,show_id:show.show_id,
+                            notices:r});
+                        });
+                });
+
+                //報告詳細（承認・編集）
 
                 //シフト編集画面
 
