@@ -189,7 +189,7 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
                     //  シフト報告が含まれている報告だけshiftテーブルに登録する
                     if(req.body != {}){
                         con.query('insert into report (shift,time_and_day,show_id) value (?,?,?);',
-                            [req.body,t,response[1][i].show_id],(error,r) => {
+                            [req.body,t,show.show_id],(error,r) => {
                                 if (error) throw error;
                         });
                         //登録したレコードのIDを取得
@@ -206,19 +206,42 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
                     res.sendFile(__dirname + "/public/html/shift_report_end.html")
                 });
 
-                //各ショーページ管理画面ホーム(削除はここでできる)
+                //各ショーページ管理画面ホーム(表向きには削除はここでできる)
                 app.get("/administrator/" + show.show_id,(req,res) => {
                     con.query("select N.notice_id,N.type_of_message,N.content,R.time_and_day,R.shift,R.report_id \
                     from notice as N join report as R using(report_id) where show_id = ?;",
-                    [response[1][i].show_id],
+                    [show.show_id],
                     (e,r)=>{
+                        //報告削除用post
+                        app.post("administrator/delete-notice",(req,res2) =>{
+                            //req.body.notice_idの報告を削除する
+                            if(req.body.report_id != null){
+                                con.query("delete from report where report_id = ?",[req.body.report_id]);
+                            }
+                            con.query("delete from notice where notice_id = ?",[req.body.notice_id]);
+                            
+
+                            //ショー管理ページにリダイレクトする
+                            res2.writeHead(302, {'Location': 'http://localhost:3000/administrator/' + req.body.show_id});
+
+                        });
+
+                        //報告詳細（承認・編集）
+                        r.forEach(not => {
+                            if(not.report_id != null){
+                                app.get("/administrator/" + show.show_id + "/" + not.report_id,(req,res2) =>{
+                                    res2.render("shift_report_edit.ejs",
+                                        {show_id:show.show_id,shift:JSON.parse(r.shift),td:r.time_and_day});
+                                });
+                            }
+                        });
+
                         res.render("show_administrator.ejs"
                         ,{show_name:show.show_name,show_id:show.show_id,
                             notices:r});
                         });
                 });
 
-                //報告詳細（承認・編集）
 
                 //シフト編集画面
 

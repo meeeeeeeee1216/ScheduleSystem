@@ -22,6 +22,7 @@
                     <thead>
                         <!-- ショーの日時と種類だけ表示 -->
                         <tr>
+                            <th>No.</th>
                             <th>種類</th>
                             <th>ショー日時</th>
                             <th>詳細</th>
@@ -33,12 +34,57 @@
                                 <td><%= element.notice_id %></td>
                                 <td><%= element.type_of_message %></td>
                                 <td><%= element.time_and_day %></td>
-                                <td><a href= <%= "http://localhost:3000/administrator/" 
-                                + show_id + "/" + element.report_id%> >表示</a></td>
+                                <td><button id=<%= "open" + element.notice_id %> onClick="show_detail(this)"> 詳細表示</td>
+                            </tr>
+                            <tr id= <% "shift-detail-" + element.notice_id %> style="display : none;">
+                                <td>シフト</td>
+                                <!-- 表示形式ちょっと考える必要ありかも -->
+                                <td>
+                                    <% element.shift = JSON.parse(element.shift);%>
+                                    <% for(var roll in element.shift){ %>
+                                        <%= roll %> : <%= element.shift[roll] %> <br>
+                                    <% } %>
+                                </td>
+                            </tr>
+                            <tr id= <% "other-detail-" + element.notice_id %> style="display : none;">
+                                <td>そのほか入力</td>
+                                <td>
+                                    <%= element.content %>
+                                </td>
+                            </tr>
+                            <tr id = <%= "operate-" + element.notice_id %> style="display : none;">
+                                <td><button onclick=<%= "location.href='http://localhost:3000/administrator" 
+                                + show.show_id + "/" + element.report_id +  "'"%> > 報告編集・公開</td>
+                                <form name="delete-notice" action="http://localhost:3000/administrator/delete-notice" method="post">
+                                    <input type="text" name="notice_id" maxlength="20" value = <%= element.notice_id %> 
+                                    style="display:none;" requierd>
+                                    <input type="text" name="report_id" maxlength="20" value = <%= element.report_id %> 
+                                    style="display:none;" requierd>
+                                    <input type="text" name="show_id" maxlength="20" value = <%= show_id %> 
+                                    style="display:none;" requierd>
+                                    <td><button name="delete" type="submit" sytle="background-color : red">削除（復元不可）</button></td>
+                                </form>
+                                <td><button id=<%= "close-" + element.notice_id %> onClick="close_detail(this)"> 閉じる</td>
                             </tr>
                         <% }); %>
+                        <!-- 詳細表示 -->
+                        <script type="text/javascript">
+                            function show_detail(ele){
+                                let id = this.id.slice(4);
+                                document.getElementById("shift-detail-" + id).style.display = "contents";
+                                document.getElementById("other-detail-" + id).style.display = "contents";
+                                document.getElementById("operate-" + id).style.display = "contents";
+                            };
+                            function close_detail(ele){
+                                let id = this.id.slice(5);
+                                document.getElementById("shift-detail-" + id).style.display = "none";
+                                document.getElementById("other-detail-" + id).style.display = "none";
+                                document.getElementById("operate-" + id).style.display = "none";
+                            };
+                        </script>
                     </tbody>
                 </table>
+
                 <h3>シフト手入力（送信を押すとすぐに公開されます）</h3>
                 <!-- 
                  入力用のフォーム、役名から手入力にします？

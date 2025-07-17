@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>ショーシフト管理システム</title>
+    </head>
+    <body>
+        
+        <script src = "../public/js/make_header.js" type="text/javascript"></script>
+        <main>
+            <div class="title">
+                <h2><%= show_name %> シフト報告</h2>
+            </div>
+            <form action=<%= "http://localhost:3000/administrator/" + show_id + "/report-public" %> 
+                method="post" name="form">
+                <div id="info">
+                    <p>＜ショー日時＞</p>
+                    <input type="datetime-local" name="time" value=<%= td %> require>
+                </div>
+                <div id="shift">
+                    <p>＜キャスト名報告＞</p>
+
+                    <!-- ここにも役名一覧表が必要ですよ -->
+                    <% rolls.forEach(element => { %>
+                        <p style="display:inline-block"> <%= element.roll_name %></p>
+                        <% for(var i=0;i < roll_cast.length;i ++){%>
+                            <% if(element.roll_name == roll_cast[i].roll_name) {%>
+                                <input type="radio" name = <%= element.roll_id %> 
+                                value = <%= roll_cast[i].entertainer_id %>>
+                                 <%= roll_cast[i].entertainer_name %>
+                        <%}};%>
+                        <br>
+                    <% });%>
+                </div>
+                <button name="send" type="submit">確定して公開</button>
+            </form>
+            
+        </main>
+   </body>
+</html>
