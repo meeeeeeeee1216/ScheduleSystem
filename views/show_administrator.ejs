@@ -38,7 +38,6 @@
                             </tr>
                             <tr id= <% "shift-detail-" + element.notice_id %> style="display : none;">
                                 <td>シフト</td>
-                                <!-- 表示形式ちょっと考える必要ありかも -->
                                 <td>
                                     <% element.shift = JSON.parse(element.shift);%>
                                     <% for(var roll in element.shift){ %>
@@ -53,7 +52,7 @@
                                 </td>
                             </tr>
                             <tr id = <%= "operate-" + element.notice_id %> style="display : none;">
-                                <td><button onclick=<%= "location.href='http://localhost:3000/administrator" 
+                                <td><button onclick=<%= "location.href='http://localhost:3000/administrator"
                                 + show.show_id + "/" + element.report_id +  "'"%> > 報告編集・公開</td>
                                 <form name="delete-notice" action="http://localhost:3000/administrator/delete-notice" method="post">
                                     <input type="text" name="notice_id" maxlength="20" value = <%= element.notice_id %> 
@@ -96,7 +95,7 @@
                  ショーページのホーム画面に飛ばして、キャスト名が書いてあるところをテキストボックスにして編集できるようにする
                  保存ボタンで送信 
                 -->
-                <h3>報告フォーム編集</h3>
+                <a href=<%= "http://localhost:3000/administrator/" + show_id + "/form-edit" %>>報告フォーム編集</h3>
                 <!-- 
                 【画面遷移】
                  デビュー、ポジション追加など　
