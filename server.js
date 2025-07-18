@@ -254,9 +254,38 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
             });
 
             app.post("admimnistrator/"+ show.show_id + "/form-edit",(req,res) => {
-                //リクエストをDBに登録して
+                //リクエストをDBに登録
+                let cast_id = null;
+                let roll_id = null;
+                //新ポジション
+                if(req.body.type == "new-roll"){
+                    con.query("insert into roll (roll_name,show_id) value (?,?)"
+                        ,[req.body["text_position_name"],show.show_id]);
+                    
+                    //個々の判定inかundefinedかどっちだろう
+                    if(req.body in "new_roll_text_entertainer_name"){
+                        con.query("insert into entertainer entertainer_name value ?;",[req.body["new_roll_text_entertainer_name"]],(e,r));
+                    }
+                }else{
+                    //デビュー
+                    con.query("insert into roll (roll_name,show_id) value (?,?)"
+                        ,[req.body["text_position_name"],show.show_id]);
+                }
+                
+                    con.query("select tt_id from Time_table where day_and_time = ?",[req.body.time],(e,r) => {
+                        con.query("insert into shift (tt_id,roll_id,entertainer_id,show_id) value (?,?,?,?)",
+                            [r,])
+                    })
                 //再表示して反映
             });
+
+            //新人キャスト登録
+            function insert_entertainer(name){
+                con.query("insert into entertainer entertainer_name value ?;",[name],(e,r) => {
+                    if(e) throw e;
+                    return con.query("select last_insert_id();")
+                });
+            };
 
 
     });
