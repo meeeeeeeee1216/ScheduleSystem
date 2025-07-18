@@ -21,13 +21,16 @@
                     <p>＜キャスト名報告＞</p>
 
                     <!-- ここにも役名一覧表が必要ですよ -->
-                    <% rolls.forEach(element => { %>
-                        <p style="display:inline-block"> <%= element.roll_name %></p>
-                        <% for(var i=0;i < roll_cast.length;i ++){%>
-                            <% if(element.roll_name == roll_cast[i].roll_name) {%>
-                                <input type="radio" name = <%= element.roll_id %> 
-                                value = <%= roll_cast[i].entertainer_id %>>
-                                 <%= roll_cast[i].entertainer_name %>
+                    <% rolls.forEach(roll => { %>
+                        <p style="display:inline-block"> <%= roll.roll_name %></p>
+                        <% roll_cast.forEach(re => {%>
+                            <% if(roll.roll_name == re.roll_name) {%>
+                                <input type="radio" name = <%= roll.roll_id %> 
+                                value = <%= re.entertainer_id %>
+                                <% if(shift[roll.roll_name] == re.entertainer_name){ %>
+                                    checked
+                                <%}; %> >
+                                 <%=re.entertainer_name %>
                         <%}};%>
                         <br>
                     <% });%>

@@ -147,11 +147,14 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
         join roll using(roll_id) \
         join entertainment_show as ES on ES.show_id = shift.show_id \
         join time_table as tt using(tt_id) \
-        where shift.show_id = ?;"
+        where shift.show_id = ?;" + 
+        "select distinct roll_name,entertainer_name,roll_id,entertainer_id \
+        from Shift join roll using(roll_id) join entertainer using(entertainer_id);"
             ,[show.show_id,show.show_id]
             ,(e1,res2)=>{
                 let roll_res = res2[0];
                 let shift_res = res2[1];
+                let roll_cast_res = res2[2]
 
                 //各ショーホーム画面（シフト表示）
                 //shift rolls 辞書のまま
@@ -163,13 +166,9 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
                 
                 //報告画面
                 app.get("/show/" + show.show_id + "/report",(req,res) => {
-                    con.query("select distinct roll_name,entertainer_name,roll_id,entertainer_id \
-                        from Shift join roll using(roll_id) join entertainer using(entertainer_id);"
-                        ,(e,roll_cast_res) =>{
-                            res.render("shift_report.ejs",
-                            {show_name:show.show_name,show_id:show.show_id,
-                                rolls:roll_res,roll_cast:roll_cast_res});
-                        });
+                    res.render("shift_report.ejs",
+                    {show_name:show.show_name,show_id:show.show_id,
+                        rolls:roll_res,roll_cast:roll_cast_res});
                 });
 
                 //報告受け取り
@@ -227,11 +226,11 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
                         });
 
                         //報告詳細（承認・編集）
-                        r.forEach(not => {
-                            if(not.report_id != null){
-                                app.get("/administrator/" + show.show_id + "/" + not.report_id,(req,res2) =>{
+                        r.forEach(noti => {
+                            if(noti.report_id != null){
+                                app.get("/administrator/" + show.show_id + "/" + noti.report_id,(req,res2) =>{
                                     res2.render("shift_report_edit.ejs",
-                                        {show_id:show.show_id,shift:JSON.parse(r.shift),td:r.time_and_day});
+                                        {show_id:show.show_id,shift:JSON.parse(noti.shift),td:noti.time_and_day,rolls:roll_res,});
                                 });
                             }
                         });
