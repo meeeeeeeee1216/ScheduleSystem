@@ -14,31 +14,66 @@
             <form action=<%= "http://localhost:3000/show/" + show_id + "report/end" %> 
                 method="post" name="form">
                 <div id="info">
-                    <p>＜デビューしたショー日時＞</p>
+                    <h3>＜デビューした・ポジションが増えた　公演の日時＞</h3>
                     <input type="datetime-local" name="time" require>
                 </div>
-                <div id="shift">
-                    <p>デビューしたポジションとキャスト名を選択してください</p>
-                    <p>新人キャストの場合は入力欄に名前を記入してください</p>
-
-                    <select name="roll_name">
-                        <option value="0" > 選択してください </option>
-                        <% rolls.forEach(roll => { %>
-                            <option value=<%=roll.roll_id %> > <%= roll.roll_name %> </option>
-                        <% });%>
-                    </select style="display:inline-block">
-
-                    <select name="entertainer_name">
+                <div id="new-roll">
+                    <h3>新ポジション登録</h3>
+                    <p>すでに登録されているポジションと同じ名前で登録することはできません。表記を分けて登録してください（〇〇１,〇〇２など）</p>
+                    <br>
+                    <p style="display:inline-block">ポジション名</p>
+                    <input type="text" name=<%= "text_entertainer_name" + roll.roll_id %> id="text_entertainer_name">
+                    <br>
+                    <select name=<% "new_roll_entertainer_name"%>>
                         <option value="0" > 選択してください </option>
                         <% all_cast.forEach(cast => { %>
                             <option value=<%=cast.entertainer_id %> > <%= cast.entertainer_name %> </option>
                         <% });%>
                     </select>
                     <br>
-                    <input type="text" name="text_entertainer_name">
+                    <p>新しいポジションで新人キャストがデビューした場合はこちらに入力</p>
+                    <input type="text" name=<%= "new_roll_text_entertainer_name" + roll.roll_id %> id="text_entertainer_name">
                 </div>
-                <button name="send" type="submit">追加</button>
+                <div id="debut">
+                    <h3>デビュー登録</h3>
+                    <p>新人キャストの場合は入力欄に名前を記入してください</p>
+                    <p>（すでに登録されているキャストと同姓同名での登録ができません。表記を分けて登録してください）</p>
+
+                    <% rolls.forEach(roll => { %>
+                        <p  style="display:inline-block"> <%= roll.roll_name %> </p>
+                        <select name=<% "entertainer_name" + roll.roll_id %>>
+                            <option value="0" > 選択してください </option>
+                            <!-- ↑のポジションに対して登録されていないキャストだけを抽出 -->
+                            <% all_cast.forEach(cast => { %>
+                                <% let flag = false %>
+                                <% roll_cast.forEach(rc => { %>
+                                    <% if(rc.entertainer_id == cast.entertainer_id and rc.roll_id == roll.roll_id){ %>
+                                        <% flag = true; }%>
+                                <%});%>
+                                <% if(flag == false){ %>
+                                    <option value=<%=cast.entertainer_id %> > <%= cast.entertainer_name %> </option>
+                                <%}%>
+                            <% });%>
+                        </select>
+                        <br>
+                        <input type="text" name=<%= "text_entertainer_name" + roll.roll_id %> id="text_entertainer_name">
+                    <% });%>
+                </div>
+                <button name="send" type="submit" onClick="check_Unregistered">追加</button>
             </form>
+
+            <sctipt type="text/javascript">
+                function check_Unregistered(){
+                    let roll = document.getElementById("roll_name");
+                    let entertainer = document.getElementById("entertainer_name");
+                    let text_entertainer = document.getElementById("text_entertainer_name");
+                    let new_text_entertainer = document.getElementById("new_roll_text_entertainer_name");
+
+                    if(text_entertainer.value in entertainer.options or new_text_entertainer.value in entertainer.options){
+                        alert("記入されたキャストは既に登録されています \n 同名のキャストが存在する場合は表記を分けて登録してください")
+                    }
+                };
+            </sctipt>
             
         </main>
    </body>

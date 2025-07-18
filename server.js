@@ -248,7 +248,8 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
             //報告フォームの編集（キャスト追加、ポジション追加）
             app.get("administrator/" + show.show_id + "/form-edit",(req,res) =>{
                 res.render("shift_report_form_edit.ejs",{
-                    show_id:show.show_id, rolls:roll_res, roll_cast: roll_cast_res,all_cast:all_cast_res});
+                    show_id:show.show_id, rolls:roll_res, 
+                    roll_cast: roll_cast_res,all_cast:all_cast_res});
                 });
             });
 
