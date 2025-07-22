@@ -10,6 +10,7 @@
         <main>
             <div class="title">
                 <h2><%= show_name %> シフト報告</h2>
+                <a href="http://localhost:3000/administrator/"
             </div>
             <form action=<%= "http://localhost:3000/administrator/" + show_id + "/report-public" %> 
                 method="post" name="form">
@@ -19,21 +20,42 @@
                 </div>
                 <div id="shift">
                     <p>＜キャスト名報告＞</p>
-
-                   
+                    <!-- 送られるデータ：｛time:時間,"roll_id":"entertainer_id" or "debut_new", ...｝ -->
                     <% rolls.forEach(roll => { %>
-                        <p style="display:inline-block"> <%= roll.roll_name %></p>
-                        <% roll_cast.forEach(re => {%>
-                            <% if(roll.roll_name == re.roll_name) {%>
-                                <input type="radio" name = <%= roll.roll_id %> 
-                                value = <%= re.entertainer_id %>
-                                <% if(shift[roll.roll_name] == re.entertainer_name){ %>
-                                    checked
-                                <%}; %> >
-                                 <%=re.entertainer_name %>
-                        <%}};%>
+                        <p> <%= roll.roll_name %></p>
+                        <!-- 登録済みのキャストが未経験の役で出演（デビュー） -->
+                        <% if(shift[roll.roll_id] == "debut"){ %>
+                            <p style="display: inline-block">デビュー：</p> 
+                            <select name= <% roll.roll_id %>>
+                            <% all_cast.forEach(cast => { %>
+                                <option value = <% cast.entertainer_id %>
+                                <% if (shift["debut" + element.roll_id] == cast.entertainer_id){ %>
+                                    selected
+                                <% } %> >  
+                                    <%= cast.entertainer_name %> </option>
+                            <% }) %>
+
+                        <!-- 未登録の新人キャストが出演 -->
+                        <% } else if( shift[roll.roll_id] == "debut_new"){ %>
+                            <!-- 表記が競合していないかチェックが必要 -->
+                            <!-- チェックできて、登録してOKならボタンでPOSTリダイレクトしてentertainerテーブル登録 -->
+                            <!-- ↑の状態に遷移できるようにbody[roll_id] = "debut",body["debut" + roll_id] = 登録したIDになるようにバック側で設定 -->
+                             
+                        <!-- 登録済み、出演済みの通常報告 -->
+                        <% } else {%>
+                            <% roll_cast.forEach(re => { %>
+                                <% if(roll.roll_name == re.roll_name) {%>
+                                    <input type="radio" name = <%= roll.roll_id %> value = <%= re.entertainer_id %> 
+                                    <% if(shift[roll.roll_id] == re.entertainer_id){ %>
+                                        checked
+                                    <% }; %> >
+                                <%=re.entertainer_name %>
+                                <% } %>
+                            <% }); %>
+                            
+                        <%}%>
                         <br>
-                    <% });%>
+                    <% }); %>
                 </div>
                 <button name="send" type="submit">確定して公開</button>
             </form>

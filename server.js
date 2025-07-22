@@ -170,7 +170,7 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
             app.get("/show/" + show.show_id + "/report",(req,res) => {
                 res.render("shift_report.ejs",
                 {show_name:show.show_name,show_id:show.show_id,
-                    rolls:roll_res,roll_cast:roll_cast_res});
+                    rolls:roll_res,roll_cast:roll_cast_res,all_cast:all_cast_res});
             });
 
             //報告受け取り
@@ -427,6 +427,7 @@ con.query('select entertainer_id ,entertainer_name from entertainer;',function(e
         });
     }
 });
+
 
 
 

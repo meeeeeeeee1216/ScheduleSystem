@@ -21,12 +21,29 @@
                     <p>＜キャスト名報告＞</p>
                     <% rolls.forEach(element => { %>
                         <p style="display:inline-block"> <%= element.roll_name %></p>
-                        <% for(var i=0;i < roll_cast.length;i ++){%>
+                        <% for(var i=0;i < roll_cast.length;i++){%>
                             <% if(element.roll_name == roll_cast[i].roll_name) {%>
                                 <input type="radio" name = <%= element.roll_id %> 
                                 value = <%= roll_cast[i].entertainer_id %>>
                                  <%= roll_cast[i].entertainer_name %>
                         <%}};%>
+                        <p>デビュー</p>
+                        <input type="radio" name = <%= element.roll_id %> value = "debut">
+                        <select name=<%= "debut" + element.roll_id %>>
+                            <% all_cast.forEach(cast => { %>
+                                <% for(var i=0;i < roll_cast.length;i++){%>
+                                    <% if(element.roll_name == roll_cast[i].roll_name and roll_cast[i].roll_id == cast.entertainer_id){ %>
+
+                                    <% }else{ %>
+                                        <option value= <%= cast.entertainer_id %> > 
+                                            <%= cast.entertainer_name %>
+                                        </option>
+                                    <% }} %>
+                            <% }); %>
+                        </select>
+                        <input type="radio" name = <%= element.roll_id %> value = "debut_new">
+                            未登録キャスト（選択肢の中にない）
+                        <input type="text" name= <%= "debut_new" + element.roll_id %> >
                         <br>
                     <% });%>
                 </div>
@@ -35,7 +52,7 @@
                     <input type="radio" name="other_type" value = "only_shift" checked="true"> 
                     その他なし、シフト報告のみ<br>
                     <input type="radio" name="other_type" value = "correction"> シフト情報修正依頼<br>
-                    <input type="radio" name="other_type" value = "debut"> 新キャストデビュー報告 <br>
+                    <input type="radio" name="other_type" value = "debut"> デビュー・新人キャスト情報提供<br>
                     <input type="radio" name="other_type" value = "new_position"> 新ポジション報告<br>
                     <input type="radio" name="other_type" value = "irregular_info"> 演出変更の情報提供<br>
                     <br>
