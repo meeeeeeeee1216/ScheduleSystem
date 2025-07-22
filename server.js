@@ -230,10 +230,41 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
                     //報告詳細（承認・編集）
                     r.forEach(noti => {
                         if(noti.report_id != null){
+                            noti.shift = JSON.parse(noti.shift);
+
+                            //詳細表示ボタンを押した遷移先
                             app.get("/administrator/" + show.show_id + "/" + noti.report_id,(req,res2) =>{
                                 res2.render("shift_report_edit.ejs",
                                     {show_id:show.show_id,rolls:roll_res,roll_cast:roll_cast_res
-                                        ,shift:JSON.parse(noti.shift),td:noti.time_and_day});
+                                        ,shift:noti.shift,td:noti.time_and_day,report_id:noti.report_id});
+                            });
+
+                            app.post("/administrator/" + show.show_id + "/" + noti.report_id,(req,res2) => {
+                                //報告編集確定・公開
+                                if(req.body["check-confirm"] == True){
+                                    //シフト内容DBへ登録
+                                    //報告をDBから削除
+                                    //公開画面へ遷移
+                                }else{
+                                    //未登録キャスト登録
+                                    roll.forEach(roll => {
+                                        //チェックボックスがチェックされてたらtrueになる
+                                        if(req.body["edit-check" + roll.roll_id] == true){
+                                            //キャストをテーブルに登録
+                                            con.query("insert into entertainer (entertainer_name) value (?)"
+                                                ,[req.body["debut_new" + roll.roll_id]],
+                                            (e,i) =>{if(e) throw e;});
+                                            con.query("select last_insert_id()",(e,new_ent_id) =>{
+                                                noti.shift[roll.roll_id] = new_ent_id;
+                                            });
+                                        }
+                                    })
+                                    res2.render("shift_report_edit.ejs",
+                                        {show_id:show.show_id,rolls:roll_res,roll_cast:roll_cast_res
+                                            ,report_id:noti.report_id
+                                            ,shift:noti.shift,td:noti.time_and_day});
+                                    
+                                }
                             });
                         }
                     });
@@ -245,7 +276,7 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
             });
 
 
-            //報告フォームの編集（キャスト追加、ポジション追加）
+            //報告フォームの編集（ポジション追加）
             app.get("administrator/" + show.show_id + "/form-edit",(req,res) =>{
                 res.render("shift_report_form_edit.ejs",{
                     show_id:show.show_id, rolls:roll_res, 
