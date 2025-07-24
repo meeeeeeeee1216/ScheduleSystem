@@ -90,7 +90,7 @@ app.post("/administrator",function(req,res){
 });
 
 //管理画面ホーム
-app.get("/administrator",(req,res) => {
+app.get("/administrator-home",(req,res) => {
     //ログイン状態チェック
     //ログアウトならログイン画面へ
     //自分が管理者のショー管理画面
@@ -130,16 +130,208 @@ app.post("/sign-up/end",function(req,res){
 
 
 //ショー一覧画面
-app.get("/show",(req,res) => {
+app.get("/show-home",(req,res) => {
     con.query("select show_id,show_name from entertainment_show;",function(error, response){
         res.render("list.ejs",{list: response,kind_org:req.originalUrl});
     })
 });
 
+//各ショーホーム画面(http://localhost:3000/show?show_id=)
+app.get("/show",(req,res) => {
+    //req.query => {show_id:"id"}
+    con.query("select show_name from entertainment_show where show_id = ?;" + 
+        "select roll_name,roll_id from roll where show_id = ?;" + 
+        "select tt.day_and_time,roll.roll_name,entertainer.entertainer_name,ES.show_name \
+        from shift join entertainer using(entertainer_id) \
+        join roll using(roll_id) \
+        join entertainment_show as ES on ES.show_id = shift.show_id \
+        join time_table as tt using(tt_id) \
+        where shift.show_id = ?;" ,
+        [parseInt(req.query.show_id),parseInt(req.query.show_id),parseInt(req.query.show_id)]
+        ,(e,db_res) => {
+        res.render("show_home.ejs",{shift_res:db_res[2],rolls:db_res[1],
+            show_name:db_res[0][0].show_name,show_id:req.query.show_id});
+    });
+});
+
+//各ショー報告画面（http://localhost:3000/show-report?show_id=）
+app.get("/show-report",(req,res) => {
+    con.query("select show_name from entertainment_show where show_id = ?;" + 
+        "select roll_name,roll_id from roll where show_id = ?;" + 
+        "select distinct roll_name,entertainer_name,roll_id,entertainer_id \
+        from Shift join roll using(roll_id) join entertainer using(entertainer_id);" + 
+        "select * from entertainer;"
+        ,[parseInt(req.query.show_id),parseInt(req.query.show_id)],
+        (e,db_res) => {
+            res.render("shift_report.ejs",
+            {show_name:db_res[0][0].show_name,show_id:show.show_id,
+                rolls:db_res[1],roll_cast:db_res[2],all_cast:db_res[3]});
+
+    })
+})
+
+//報告受け取り(http://localhost:3000/show-report/end , post)
+app.post("/show-report/end",(req,res) => {
+    //報告種別、ショーの日時、手入力欄を削除してreq.bodyにシフト情報だけ残す
+    var t = req.body.time;
+    var type = req.body.other_type
+    var other_content = null;
+    var show_id = parseInt(req.body["show_id"]);
+    if(type != "only_shift"){
+        other_content = req.body.other_content;
+    }
+    delete req.body.time,req.body.other_type,req.body.other_content
+
+    //DBに登録
+    //shift
+    var report_id = null;
+    //  シフト報告が含まれている報告だけshiftテーブルに登録する
+    if(req.body != {}){
+        con.query('insert into report (shift,time_and_day,show_id) value (?,?,?);',
+            [req.body,t,show_id],(error,r) => {
+                if (error) throw error;
+        });
+        //登録したレコードのIDを取得
+        con.query('select last_insert_id();',(e,r) => {
+            report_id = r;
+        });
+    };
+    //notice
+    con.query('insert into notice (show_id,type_of_message,content,report_id) value (?,?,?,?);',
+        [show_id,type,other_content,r],(e,r) =>{
+            if (e) throw e;
+        }
+    );
+    res.sendFile(__dirname + "/public/html/shift_report_end.html")
+});
+
+//各ショーページ管理画面ホーム(表向きには削除はここでできる)
+//http://localhost:3000/administrator?show_id=
+app.get("/administrator",(req,res) => {
+    con.query("select show_name from entertainment_show where show_id = ?;" +
+        "select N.notice_id,N.type_of_message,N.content,\
+        R.time_and_day,R.shift,R.report_id \
+        from notice as N join report as R using(report_id) where show_id = ?;"
+        ,[parseInt(req.query["show_id"]),parseInt(req.query["show_id"])]
+        ,(e,db_res) => {
+            res.render("show_administrator.ejs"
+            ,{show_name:db_res[0][0].show_name,show_id:req.query.show_id,
+                notices:db_res[1]});
+    })
+})
+
+//各ショー管理画面の報告削除用POST
+app.post("administrator/delete-notice",(req,res2) =>{
+    //req.body.notice_idの報告を削除する
+    if(req.body.report_id != null){
+        con.query("delete from report where report_id = ?",[req.body.report_id]);
+    }
+    con.query("delete from notice where notice_id = ?",[req.body.notice_id]);
+    
+
+    //ショー管理ページにリダイレクトする
+    res2.writeHead(302, {'Location': 'http://localhost:3000/administrator?' + req.body.show_id});
+
+});
+
+//報告詳細確認画面
+// (http://localhost:3000/administrator/report-detail?show_id= & notice_id = )
+app.get("administrator/report-detail",(req,res) => {
+    con.query("select roll_name,roll_id from roll where show_id = ?;" +
+        "select distinct roll.roll_name,entertainer.entertainer_name,roll.roll_id,entertainer.entertainer_id \
+        from Shift join roll using(roll_id) join entertainer using(entertainer_id) \
+        where show_id = ?;" + 
+        "select day_and_time from time_table where show_id = ?;" +
+        "select N.notice_id,N.type_of_message,N.content,\
+        R.time_and_day,R.shift,R.report_id \
+        from notice as N join report as R using(report_id) \
+        where show_id = ? and notice_id = ?;"
+        ,[parseInt(req.query.show_id),parseInt(req.query.show_id),parseInt(req.query.show_id)
+        ,parseInt(req.query.show_id),parseInt(req.query.notice_id)],
+        (e,db_res) => {
+            res.render("shift_report_edit.ejs",
+                {show_id:req.query.show_id,
+                    rolls:db_res[0],roll_cast:db_res[1],tt:db_res[2]
+                    ,shift:db_res[3][0].shift,td:db_res[3][0].time_and_day,
+                    report_id:db_res[3][0].report_id});
+
+        });
+});
+
+//notiが見れるように、notice_idをフォームで送るようにしてくれ
+app.post("administrator/report-detail",(req,res) => {
+    //報告編集確定・公開
+    if(req.body["check-confirm"] == True){
+        //シフト内容DBへ登録
+        //req.body -> {time:時間,"roll_id":"entertainer_id" ...}
+        //TTを登録
+        con.query("insert into Time_Table (show_id,day_and_time) value (?,?)",
+            [show.show_id,req.body.time]);
+        //TT削除してシフト情報だけにする
+        delete req.body.time
+        con.query("select last_insert_ID()",(e,tt_id)=>{
+            for(var roll_id in req.body){
+                con.query("insert into shift (tt_id,roll_id,entertainer_id,show_id) value (?,?,?,?)",
+                    [tt_id,parseInt(roll_id),parseInt(req.body[roll_id]),show.show_id]
+                )
+            }
+        })
+
+        //報告をDBから削除
+        con.query("delete from report where report_id = ?",[noti.report_id]);
+        con.query("delete from notice where notice_id = ?",[noti.notice_id]);
+        //公開画面へ遷移　これだめなきがする
+        res.writeHead(302, {'Location': 'http://localhost:3000/show/' + show.show_id});
+
+    }else{
+        //未登録キャスト登録
+        con.query("select roll_name,roll_id from roll where show_id = ?;"
+        ,[req.body.show_id],(e,rolls) => {
+            rolls.forEach(roll => {
+                //チェックボックスがチェックされてたらtrueになる
+                if(req.body["edit-check" + roll.roll_id] == true){
+                    //キャストをテーブルに登録
+                    con.query("insert into entertainer (entertainer_name) value (?)"
+                        ,[req.body["debut_new" + roll.roll_id]],
+                    (e,i) =>{if(e) throw e;});
+                    con.query("select last_insert_id()",(e,new_ent_id) =>{
+                        noti.shift[roll.roll_id] = "debut";
+                        noti.shift["debut" + element.roll_id] = new_ent_id;
+                    });
+                }
+            });
+        });
+        con.query("select roll_name,roll_id from roll where show_id = ?;" +
+        "select distinct roll.roll_name,entertainer.entertainer_name,roll.roll_id,entertainer.entertainer_id \
+        from Shift join roll using(roll_id) join entertainer using(entertainer_id) \
+        where show_id = ?;" + 
+        "select day_and_time from time_table where show_id = ?;" +
+        "select N.notice_id,N.type_of_message,N.content,\
+        R.time_and_day,R.shift,R.report_id \
+        from notice as N join report as R using(report_id) \
+        where show_id = ? and notice_id = ?;"
+        ,[parseInt(req.query.show_id),parseInt(req.query.show_id),parseInt(req.query.show_id)
+        ,parseInt(req.query.show_id),parseInt(req.query.notice_id)],
+        (e,db_res) => {
+            res.render("shift_report_edit.ejs",
+                {show_id:req.query.show_id,
+                    rolls:db_res[0],roll_cast:db_res[1],tt:db_res[2]
+                    ,shift:db_res[3][0].shift,td:db_res[3][0].time_and_day,
+                    report_id:db_res[3][0].report_id});
+
+        });
+        
+    }
+});
+
+//＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+
 //各ショー画面
 con.query("select * from entertainment_show;",(e0,show_res)=>{
     if(e0) throw e0;
+    console.log(show_res);
     show_res.forEach(show => {
+        console.log(show.show_id)
         //このショーの役名一覧とシフトを取得
         con.query("select roll_name,roll_id from roll where show_id = ?;" + 
         "select tt.day_and_time,roll.roll_name,entertainer.entertainer_name,ES.show_name \
@@ -150,9 +342,10 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
         where shift.show_id = ?;" + 
         "select distinct roll_name,entertainer_name,roll_id,entertainer_id \
         from Shift join roll using(roll_id) join entertainer using(entertainer_id);" + 
-        "select * from entertainer"
+        "select * from entertainer;"
         ,[show.show_id,show.show_id]
         ,(e1,res2)=>{
+            console.log(res2);
             let roll_res = res2[0];
             let shift_res = res2[1];
             let roll_cast_res = res2[2];
@@ -162,8 +355,6 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
             //shift rolls 辞書のまま
             //フロント側で形式を整えて表示
             app.get("/show/" + show.show_id,(req,res) => {
-                res.render("show_home.ejs",{shift_res:shift_res,rolls:roll_res,
-                    show_name:show.show_name,show_id:show.show_id});
             });
             
             //報告画面
@@ -235,9 +426,6 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
                             //詳細表示ボタンを押した遷移先
                             app.get("/administrator/" + show.show_id + "/" + noti.report_id,(req,res2) =>{
                                 con.query("select day_and_time from time_table;",(e,tt_res) => {
-                                    res2.render("shift_report_edit.ejs",
-                                        {show_id:show.show_id,rolls:roll_res,roll_cast:roll_cast_res,tt:tt_res
-                                            ,shift:noti.shift,td:noti.time_and_day,report_id:noti.report_id});
 
                                 })
                             });
@@ -291,12 +479,12 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
                         }
                     });
 
-                    res.render("show_administrator.ejs"
-                    ,{show_name:show.show_name,show_id:show.show_id,
-                        notices:r});
+                    
                     });
             });
 
+
+            //=================================================================================
 
             //報告フォームの編集（ポジション追加）
             app.get("administrator/" + show.show_id + "/form-edit",(req,res) =>{
@@ -397,6 +585,7 @@ con.query('select entertainer_id ,entertainer_name from entertainer;',function(e
     }
 });
 
+con.query("exit;")
 
 
 

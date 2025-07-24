@@ -35,7 +35,7 @@
                         <select name=<%= "debut" + element.roll_id %>>
                             <% all_cast.forEach(cast => { %>
                                 <% for(var i=0;i < roll_cast.length;i++){%>
-                                    <% if(element.roll_name == roll_cast[i].roll_name and roll_cast[i].roll_id == cast.entertainer_id){ %>
+                                    <% if(element.roll_name == roll_cast[i].roll_name && roll_cast[i].roll_id == cast.entertainer_id){ %>
 
                                     <% }else{ %>
                                         <option value= <%= cast.entertainer_id %> > 
@@ -60,7 +60,7 @@
                     <br>
                     <textarea name="other" rows="8" cols="50"></textarea>
                 </div>
-                
+                <input type="text" name = "show_id" style="display: none;" value = <%= show_id %> requierd>
                 <button name="send" type="submit">報告</button>
             </form>
             

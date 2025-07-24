@@ -175,3 +175,32 @@ VALUE
 (8,7,2,14);
 
 
+-- CREATE TABLE SSS.report(
+--     report_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+--     shift JSON NOT NULL,
+--     time_and_day DATETIME NOT NULL,
+--     show_id INT
+-- );
+
+-- CREATE TABLE SSS.notice(
+--     notice_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+--     show_id INT not null,
+--     type_of_message varchar(30) not null,
+--     content text,
+--     report_id INT,
+--     FOREIGN KEY (show_id) references entertainment_show(show_id),
+--     FOREIGN KEY (report_id) references report(report_id)
+-- -- );
+-- ('A1役',1,NULL),	
+-- ('B1役',1,NULL),	
+-- ('C1役',1,NULL),	
+-- ('A2役',2,NULL),	
+-- ('B2役',2,NULL),	
+-- ('C2役',2,NULL),	
+-- ('D2役',2,NULL);
+
+insert into report (shift,time_and_day,show_id)
+VALUE
+({'A1役':'A','B1役':'B','C1役':'C'},'2025-06-10 10:00:00',)
+
+

@@ -40,14 +40,45 @@ con.query("select * from account;",(e,ac) => {
 
 
 // "select roll_name,roll_id from roll where show_id = ?;"
-
+//"select roll_name,roll_id from roll where show_id = ?;" + 
+    // "select tt.day_and_time,roll.roll_name,entertainer.entertainer_name,ES.show_name \
+    // from shift join entertainer using(entertainer_id) \
+    // join roll using(roll_id) \
+    // join entertainment_show as ES on ES.show_id = shift.show_id \
+    // join time_table as tt using(tt_id) \
+    // where shift.show_id = ?;" + 
+    // "select distinct roll_name,entertainer_name,roll_id,entertainer_id \
+    // from Shift join roll using(roll_id) join entertainer using(entertainer_id);" + 
+    // "select * from entertainer;"
 con.query("select roll_name,roll_id from roll where show_id = ?;" + 
-        "select tt.day_and_time,roll.roll_name,entertainer.entertainer_name,ES.show_name \
-        from shift join entertainer using(entertainer_id) \
-        join roll using(roll_id) \
-        join entertainment_show as ES on ES.show_id = shift.show_id \
-        join time_table as tt using(tt_id) \
-        where shift.show_id = ?;"
-        ,[1,1],(e,res)=>{
-            console.log(res)
-        })
+    "select tt.day_and_time,roll.roll_name,entertainer.entertainer_name,ES.show_name \
+    from shift join entertainer using(entertainer_id) \
+    join roll using(roll_id) \
+    join entertainment_show as ES on ES.show_id = shift.show_id \
+    join time_table as tt using(tt_id) \
+    where shift.show_id = ?;" + 
+    "select distinct roll_name,entertainer_name,roll_id,entertainer_id \
+    from Shift join roll using(roll_id) join entertainer using(entertainer_id);" + 
+    "select * from entertainer;"
+        ,[1,1]
+        ,(e1,res2)=>{console.log(res2)});
+
+
+
+// con.query("select roll_name,roll_id from roll where show_id = ?;" + 
+//         "select tt.day_and_time,roll.roll_name,entertainer.entertainer_name,ES.show_name \
+//         from shift join entertainer using(entertainer_id) \
+//         join roll using(roll_id) \
+//         join entertainment_show as ES on ES.show_id = shift.show_id \
+//         join time_table as tt using(tt_id) \
+//         where shift.show_id = ?;"
+//         ,[1,1],(e,res)=>{
+//             console.log(res)
+//         })
+
+// con.query("select N.notice_id,N.type_of_message,N.content,R.time_and_day,R.shift,R.report_id \
+//                 from notice as N join report as R using(report_id) where show_id = ?;",
+//                 [show.show_id],
+//                 (e,r)=>{
+
+// })
