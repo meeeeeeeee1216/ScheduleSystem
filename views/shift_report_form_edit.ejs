@@ -18,60 +18,36 @@
                     <input type="datetime-local" name="time" require>
                 </div>
                 <div id="new-roll">
-                    <h3><input type="radio" name="type" value = "new-rolll">新ポジション登録</h3>
+                    <h3>新ポジション登録</h3>
                     <p>すでに登録されているポジションと同じ名前で登録することはできません。表記を分けて登録してください（〇〇１,〇〇２など）</p>
                     <br>
-                    <p style="display:inline-block">ポジション名</p>
-                    <input type="text" name="text_position_name" id="text_position_name">
+                    <p style="display:inline-block">ポジション名：</p>
+                    <input type="text" name="position_name" id="position_name">
                     <br>
-                    <select name="new_roll_entertainer_name">
-                        <option value="0" > 選択してください </option>
+                    <select name="ent_name" id="all_cast">
+                        <option value="0" > 不明 </option>
                         <% all_cast.forEach(cast => { %>
                             <option value=<%=cast.entertainer_id %> > <%= cast.entertainer_name %> </option>
                         <% });%>
                     </select>
                     <br>
                     <p>新しいポジションで新人キャストがデビューした場合はこちらに入力</p>
-                    <input type="text" name="new_roll_text_entertainer_name" id="new_roll_text_entertainer_name">
+                    <input type="text" name="ent_name_text" id="ent_name_text">
                 </div>
-                <div id="debut">
-                    <h3><input type="radio" name="type" value = "debut">デビュー登録</h3>
-                    <p>新人キャストの場合は入力欄に名前を記入してください</p>
-                    <p>（すでに登録されているキャストと同姓同名での登録ができません。表記を分けて登録してください）</p>
-
-                    <% rolls.forEach(roll => { %>
-                        <p  style="display:inline-block"> <%= roll.roll_name %> </p>
-                        <select name=<% "entertainer_name" + roll.roll_id %>>
-                            <option value="0" > 選択してください </option>
-                            <!-- ↑のポジションに対して登録されていないキャストだけを抽出 -->
-                            <% all_cast.forEach(cast => { %>
-                                <% let flag = false %>
-                                <% roll_cast.forEach(rc => { %>
-                                    <% if(rc.entertainer_id == cast.entertainer_id and rc.roll_id == roll.roll_id){ %>
-                                        <% flag = true; }%>
-                                <%});%>
-                                <% if(flag == false){ %>
-                                    <option value=<%=cast.entertainer_id %> > <%= cast.entertainer_name %> </option>
-                                <%}%>
-                            <% });%>
-                        </select>
-                        <br>
-                        <input type="text" name=<%= "text_entertainer_name" + roll.roll_id %> id="text_entertainer_name">
-                    <% });%>
-                </div>
-                <button name="send" type="submit" onClick="check_Unregistered">追加</button>
+                <button name="send" type="submit" onSubmit="return check_Unregistered">追加</button>
             </form>
 
             <sctipt type="text/javascript">
                 function check_Unregistered(){
-                    let roll = document.getElementById("roll_name");
-                    let entertainer = document.getElementById("entertainer_name");
-                    let text_entertainer = document.getElementById("text_entertainer_name");
-                    let new_text_entertainer = document.getElementById("new_roll_text_entertainer_name");
-
-                    if(text_entertainer.value in entertainer.options or new_text_entertainer.value in entertainer.options){
-                        alert("記入されたキャストは既に登録されています \n 同名のキャストが存在する場合は表記を分けて登録してください")
+                    const all_cast = document.getElementById("all_cast").options;
+                    let input_name = document.getElementById("ent_name_text").value;
+                    for(let cast of all_cast){
+                        if(input_name == cast.label){
+                            alart("入力されたキャスト名は既に使用されています");
+                            return false
+                        }
                     }
+                    return ture
                 };
             </sctipt>
             

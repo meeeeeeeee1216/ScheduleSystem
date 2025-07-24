@@ -25,6 +25,9 @@
                 </div>
                 <div id="shift">
                     <p>＜キャスト名報告＞</p>
+                    <p>新ポジションの報告があった場合には、
+                        <a href=<%= "http://localhost:3000/administrator/" + show_id + "/form-edit"%>>ここから</a>
+                        ポジション名と出演したキャスト名を登録してください</p>
                     <!-- 送られるデータ：｛time:時間,"roll_id":"entertainer_id" or "debut_new" or "debut" ...｝ キャスト登録処理が終わったら全部entertainer_idになる-->
                     <% rolls.forEach(roll => { %>
                         <p> <%= roll.roll_name %></p>
@@ -56,24 +59,12 @@
                             <!-- どこが編集されたのかを見るためのメモ用チェックボックス（非表示） -->
                             <input type="checkbox" name=<%="edit-check" + element.roll_id%> id=<%="edit-check" + element.roll_id%> style="display: none;">
                             <button id=<% "AddEntBtn_" +element.roll_id + "_" +  shift["debut_new" + element.roll_id] %> 
-                                type="submit" onClick="check_new_ent(this)">キャスト一覧に登録</button>
+                                type="submit" onSubmit="check_new_ent(this)">キャスト一覧に登録</button>
                             <!-- 表記が競合していないかチェックが必要 -->
                             <!-- チェックできて、登録してOKならボタンでPOSTでentertainerテーブル登録 -->
                             <!-- ↑の状態に遷移できるようにbody[roll_id] = "debut",body["debut" + roll_id] = 登録したIDになるようにバック側で設定 -->
 
-                        <!-- ポジションが増えた時　or そのポジションが誰だか分らなかったとき -->
-                        <% } else if( shift[roll.roll_id] == "known" or shift[roll.roll_id] == undefined ){ %>
-                            <select name= <% roll.roll_id %>>
-                            <% all_cast.forEach(cast => { %>
-                                <option value = <% cast.entertainer_id %>
-                                <% if (shift["debut" + element.roll_id] == cast.entertainer_id){ %>
-                                    selected
-                                <% } %> >  
-                                    <%= cast.entertainer_name %> </option>
-                            <% }) %>
-
-
-                        <!-- 登録済み、出演済みの通常報告 -->
+                        <!-- 登録済み、出演済みの通常報告(ポジ欠、不明もここで受ける) -->
                         <% } else {%>
                             <% roll_cast.forEach(re => { %>
                                 <% if(roll.roll_name == re.roll_name) {%>
@@ -89,31 +80,39 @@
                     <% }); %>
                 </div>
                 <input type="checkbox" id="check-confirm" name="check-confirm">
-                <button name="send" type="submit" onClick="check_confirm(this)">確定して公開</button>
+                <button name="send" type="submit" onSubmit="check_confirm(this)">確定して公開</button>
                 <p>確定すると報告された情報は削除されます</p>
             </form>
             <script type="text/javascript">
                 function check_new_ent(e){
                     let list = e.id.split("_");
-                    const all_cast = document.getElementById("all_cast_list").options
-                    if(list[2] in all_cast){
-                        alart("入力されたキャスト名は既に使用されています");
-                    }else{
+                    const all_cast = document.getElementById("all_cast_list").options;
+                    let flag = ture
+                    for(let cast of all_cast){
+                        if(list[2] == cast.label){
+                            alart("入力されたキャスト名は既に使用されています");
+                            return false
+                        }
+                    }
+                    if(flag){
                         let check = document.getElementById("edit-check" + list[1]);
                         check.checked = true
                     }
+                    return true
                 };
 
                 function check_confirm(e){
                     //日時がすでに登録済みかどうかもここでチェックしてはじいてほしい
                     let tt_list = document.getElementById("tt").options;
                     let tt_input = document.getElementById("input_tt").value;
-                    if(tt_input in tt_list){
-                        alart("この日時のショーはすでにシフトが登録・公開されています。\n編集は編集画面からおこなってください。")
-                    }else{
-                        let check = documnet.getElementById("check-confirm");
-                        check.checked = true;
+                    for(let tt of tt_list){
+                        if(tt_input == tt.label){
+                            alart("この日時のショーはすでにシフトが登録・公開されています。\n編集は編集画面からおこなってください。");
+                            return false
+                        }
                     }
+                    let check = documnet.getElementById("check-confirm");
+                    return true
                 };
             </script>
             

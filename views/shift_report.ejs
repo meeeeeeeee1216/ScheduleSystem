@@ -14,7 +14,7 @@
             <form action=<%= "http://localhost:3000/show/" + show_id + "report/end" %> 
                 method="post" name="form">
                 <div id="info">
-                    <p>＜ショー日時＞</p>
+                    <p>＜ショー日時＞（修正依頼の場合も対象となるショーの日時を選択してください）</p>
                     <input type="datetime-local" name="time" require>
                 </div>
                 <div id="shift">
@@ -22,7 +22,7 @@
                     <% rolls.forEach(element => { %>
                         <p style="display:inline-block"> <%= element.roll_name %></p>
                         <!-- 誰だかわからない（規定値） -->
-                        <input type="radio" name = <%= element.roll_id %> value = "1" selected> キャスト不明
+                        <input type="radio" name = <%= element.roll_id %> value = "1" checked="true"> キャスト不明
                         <!-- ポジ欠 -->
                         <input type="radio" name = <%= element.roll_id %> value = "2"> ポジション欠員
                         <% for(var i=0;i < roll_cast.length;i++){%>
@@ -54,7 +54,7 @@
                     <input type="radio" name="other_type" value = "only_shift" checked="true"> 
                     その他なし、シフト報告のみ<br>
                     <input type="radio" name="other_type" value = "correction"> シフト情報修正依頼<br>
-                    <input type="radio" name="other_type" value = "debut"> デビュー・新人キャスト情報提供<br>
+                    <input type="radio" name="other_type" value = "debut"> 新人キャストに関する情報提供<br>
                     <input type="radio" name="other_type" value = "new_position"> 新ポジション報告<br>
                     <input type="radio" name="other_type" value = "irregular_info"> 演出変更の情報提供<br>
                     <br>
