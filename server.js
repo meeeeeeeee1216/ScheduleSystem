@@ -234,17 +234,38 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
 
                             //詳細表示ボタンを押した遷移先
                             app.get("/administrator/" + show.show_id + "/" + noti.report_id,(req,res2) =>{
-                                res2.render("shift_report_edit.ejs",
-                                    {show_id:show.show_id,rolls:roll_res,roll_cast:roll_cast_res
-                                        ,shift:noti.shift,td:noti.time_and_day,report_id:noti.report_id});
+                                con.query("select day_and_time from time_table;",(e,tt_res) => {
+                                    res2.render("shift_report_edit.ejs",
+                                        {show_id:show.show_id,rolls:roll_res,roll_cast:roll_cast_res,tt:tt_res
+                                            ,shift:noti.shift,td:noti.time_and_day,report_id:noti.report_id});
+
+                                })
                             });
 
                             app.post("/administrator/" + show.show_id + "/" + noti.report_id,(req,res2) => {
                                 //報告編集確定・公開
                                 if(req.body["check-confirm"] == True){
                                     //シフト内容DBへ登録
+                                    //req.body -> {time:時間,"roll_id":"entertainer_id" ...}
+                                    //TTを登録
+                                    con.query("insert into Time_Table (show_id,day_and_time) value (?,?)",
+                                        [show.show_id,req.body.time]);
+                                    //TT削除してシフト情報だけにする
+                                    delete req.body.time
+                                    con.query("select last_insert_ID()",(e,tt_id)=>{
+                                        for(var roll_id in req.body){
+                                            con.query("insert into shift (tt_id,roll_id,entertainer_id,show_id) value (?,?,?,?)",
+                                                [tt_id,parseInt(roll_id),parseInt(req.body[roll_id]),show.show_id]
+                                            )
+                                        }
+                                    })
+
                                     //報告をDBから削除
+                                    con.query("delete from report where report_id = ?",[noti.report_id]);
+                                    con.query("delete from notice where notice_id = ?",[noti.notice_id]);
                                     //公開画面へ遷移
+                                    res2.writeHead(302, {'Location': 'http://localhost:3000/show/' + show.show_id});
+
                                 }else{
                                     //未登録キャスト登録
                                     roll.forEach(roll => {
@@ -255,7 +276,8 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
                                                 ,[req.body["debut_new" + roll.roll_id]],
                                             (e,i) =>{if(e) throw e;});
                                             con.query("select last_insert_id()",(e,new_ent_id) =>{
-                                                noti.shift[roll.roll_id] = new_ent_id;
+                                                noti.shift[roll.roll_id] = "debut";
+                                                noti.shift["debut" + element.roll_id] = new_ent_id;
                                             });
                                         }
                                     })
@@ -284,39 +306,39 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
                 });
             });
 
-            app.post("admimnistrator/"+ show.show_id + "/form-edit",(req,res) => {
-                //リクエストをDBに登録
-                let cast_id = null;
-                let roll_id = null;
-                //新ポジション
-                if(req.body.type == "new-roll"){
-                    con.query("insert into roll (roll_name,show_id) value (?,?)"
-                        ,[req.body["text_position_name"],show.show_id]);
+            // app.post("admimnistrator/"+ show.show_id + "/form-edit",(req,res) => {
+            //     //リクエストをDBに登録
+            //     let cast_id = null;
+            //     let roll_id = null;
+            //     //新ポジション
+            //     if(req.body.type == "new-roll"){
+            //         con.query("insert into roll (roll_name,show_id) value (?,?)"
+            //             ,[req.body["text_position_name"],show.show_id]);
                     
-                    //個々の判定inかundefinedかどっちだろう
-                    if(req.body in "new_roll_text_entertainer_name"){
-                        con.query("insert into entertainer entertainer_name value ?;",[req.body["new_roll_text_entertainer_name"]],(e,r));
-                    }
-                }else{
-                    //デビュー
-                    con.query("insert into roll (roll_name,show_id) value (?,?)"
-                        ,[req.body["text_position_name"],show.show_id]);
-                }
+            //         //個々の判定inかundefinedかどっちだろう
+            //         if(req.body in "new_roll_text_entertainer_name"){
+            //             con.query("insert into entertainer entertainer_name value ?;",[req.body["new_roll_text_entertainer_name"]],(e,r));
+            //         }
+            //     }else{
+            //         //デビュー
+            //         con.query("insert into roll (roll_name,show_id) value (?,?)"
+            //             ,[req.body["text_position_name"],show.show_id]);
+            //     }
                 
-                    con.query("select tt_id from Time_table where day_and_time = ?",[req.body.time],(e,r) => {
-                        con.query("insert into shift (tt_id,roll_id,entertainer_id,show_id) value (?,?,?,?)",
-                            [r,])
-                    })
-                //再表示して反映
-            });
+            //         con.query("select tt_id from Time_table where day_and_time = ?",[req.body.time],(e,r) => {
+            //             con.query("insert into shift (tt_id,roll_id,entertainer_id,show_id) value (?,?,?,?)",
+            //                 [r,])
+            //         })
+            //     //再表示して反映
+            // });
 
-            //新人キャスト登録
-            function insert_entertainer(name){
-                con.query("insert into entertainer entertainer_name value ?;",[name],(e,r) => {
-                    if(e) throw e;
-                    return con.query("select last_insert_id();")
-                });
-            };
+            // //新人キャスト登録
+            // function insert_entertainer(name){
+            //     con.query("insert into entertainer entertainer_name value ?;",[name],(e,r) => {
+            //         if(e) throw e;
+            //         return con.query("select last_insert_id();")
+            //     });
+            // };
 
 
     });
@@ -449,6 +471,7 @@ app.get("/entertainer",(req,res) => {
 });
 
 //各演者画面
+//ID１と２は不明と欠員なのでパス
 con.query('select entertainer_id ,entertainer_name from entertainer;',function(error,response){
     if (error) throw error;
     for(let i = 0; i < response.length; i++){

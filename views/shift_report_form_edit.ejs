@@ -9,12 +9,12 @@
         <script src = "../public/js/make_header.js" type="text/javascript"></script>
         <main>
             <div class="title">
-                <h2><%= show_name %> デビュー/新ポジション登録</h2>
+                <h2><%= show_name %> 新ポジション登録</h2>
             </div>
             <form action=<%= "http://localhost:3000/administrator/" + show_id + "/form-edit" %> 
                 method="post" name="form">
                 <div id="info">
-                    <h3>＜デビューした・ポジションが増えた　公演の日時＞</h3>
+                    <h3>＜ポジションが増えた　公演の日時＞</h3>
                     <input type="datetime-local" name="time" require>
                 </div>
                 <div id="new-roll">

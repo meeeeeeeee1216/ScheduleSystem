@@ -21,14 +21,17 @@
                     <p>＜キャスト名報告＞</p>
                     <% rolls.forEach(element => { %>
                         <p style="display:inline-block"> <%= element.roll_name %></p>
+                        <!-- 誰だかわからない（規定値） -->
+                        <input type="radio" name = <%= element.roll_id %> value = "1" selected> キャスト不明
+                        <!-- ポジ欠 -->
+                        <input type="radio" name = <%= element.roll_id %> value = "2"> ポジション欠員
                         <% for(var i=0;i < roll_cast.length;i++){%>
                             <% if(element.roll_name == roll_cast[i].roll_name) {%>
                                 <input type="radio" name = <%= element.roll_id %> 
                                 value = <%= roll_cast[i].entertainer_id %>>
                                  <%= roll_cast[i].entertainer_name %>
                         <% }};%>
-                        <p>デビュー</p>
-                        <input type="radio" name = <%= element.roll_id %> value = "debut">
+                        <input type="radio" name = <%= element.roll_id %> value = "debut">デビュー
                         <select name=<%= "debut" + element.roll_id %>>
                             <% all_cast.forEach(cast => { %>
                                 <% for(var i=0;i < roll_cast.length;i++){%>
@@ -41,8 +44,7 @@
                                     <% }} %>
                             <% }); %>
                         </select>
-                        <input type="radio" name = <%= element.roll_id %> value = "debut_new">
-                            未登録キャスト（選択肢の中にない）
+                        <input type="radio" name = <%= element.roll_id %> value = "debut_new">未登録キャスト（選択肢の中にない）
                         <input type="text" name= <%= "debut_new" + element.roll_id %> >
                         <br>
                     <% });%>
