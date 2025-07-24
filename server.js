@@ -78,7 +78,7 @@ app.post("/administrator",function(req,res){
             res.writeHead(302, {'Location': 'http://localhost:3000/sign-in'});
         }else{
             //成功
-             //認証トークン生成
+            //認証トークン生成
             //Coockieに保存
             //表示
             con.query("select show_id,show_name,administrator_id from entertainment_show;",function(error, response){
@@ -313,6 +313,7 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
                 con.query("insert into roll (roll_name,show_id) value (?,?)",
                     [req.body["position_name"],show.show_id]);
                 con.query("select last_insert_ID()",(e,roll_id)=>{
+                    //ってかどうにかなりませんかねここ
                     //ent:未登録
                     //inかundefinedか""かどれだろう
                     if(req.body in "ent_name_txt"){
