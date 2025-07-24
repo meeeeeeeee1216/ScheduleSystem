@@ -55,7 +55,7 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 
-//リンク作成
+
 //ホーム画面
 app.get('/',(req,res) => {
     res.sendFile(__dirname + "/public/html/home.html");
@@ -364,18 +364,23 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
                     }
                 });
                 //公開画面へ遷移
-                res2.writeHead(302, {'Location': 'http://localhost:3000/show/' + show.show_id});
+                res.writeHead(302, {'Location': 'http://localhost:3000/show/' + show.show_id});
             });
 
 
     });
 });
 
+//新ショー登録申請画面
+app.get("administrator/show-reqest",(req,res)=>{
+    res.render("new_show_reqest.ejs",{})
+})
+
 
 //演者一覧画面
 app.get("/entertainer",(req,res) => {
     con.query("select entertainer_id,entertainer_name from entertainer;",function(error, response){
-        res.render("list.ejs",{list: response,kind_org:req.originalUrl});
+        res.render("list.ejs",{list:response,kind_org:req.originalUrl});
     })
 });
 

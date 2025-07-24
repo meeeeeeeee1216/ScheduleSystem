@@ -45,7 +45,9 @@
                         }else if(kind_org === "/entertainer"){
                             var link = 'http://localhost:3000' + kind_org + '/' + list[i].entertainer_id;
                             var name = list[i].entertainer_name
-                        }else if(kind_org === "/administrator"){
+                        }else if(kind_org === "/administrator"){ %>
+                            <a href="http://localhost:3000/administrator/show-reqest">新ショー登録申請</a>
+                        <%
                             var link = 'http://localhost:3000' + kind_org + '/' + list[i].show_id;
                             var name = list[i].show_name
                         }%>
