@@ -22,6 +22,10 @@
 //await(非同期処理)
 //https://qiita.com/yunity29/items/7ccc84d47e139340ecbc
 
+//https://sidorares.github.io/node-mysql2/docs#array-results
+///https://qiita.com/tatsumi44/items/4b0fe912a49025591945
+//https://qiita.com/miyabisun/items/3a139f8f48aa34f6d566
+
 //insertとかdeleteの後にはcommitをしろ
 //結果を代入するためにpromiseをつかえ
 //awaitはマルチスレッド
@@ -649,8 +653,4 @@ con.query('select entertainer_id ,entertainer_name from entertainer;',function(e
         });
     }
 });
-
-con.query("exit;")
-
-
 
