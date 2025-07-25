@@ -17,12 +17,21 @@
 //cookie
 //https://qiita.com/whopper1962/items/88c1eb7c3dfeb813ea4d
 
+//promise
+//https://qiita.com/tatsumi44/items/4b0fe912a49025591945
+//await(非同期処理)
+//https://qiita.com/yunity29/items/7ccc84d47e139340ecbc
+
+//insertとかdeleteの後にはcommitをしろ
+//結果を代入するためにpromiseをつかえ
+//awaitはマルチスレッド
+
 
 //モジュール
 const express = require("express");
 const app = express();
 const PORT = 3000;
-const mysql = require("mysql2");
+const mysql = require("mysql2/promise");
 const path = require("path");
 const bodyParser = require("body-parser");
 const fs = require("fs");
@@ -35,12 +44,15 @@ app.listen(PORT, () => {
 });
 
 //DB接続
-const con = mysql.createConnection({
+
+const con = mysql.createPool({
     host: "localhost",
     user: "root",
     password: 'pass1234',
     database: "SSS",
-    multipleStatements:true
+    connectionLimit: 5
+    //namedPlaceholders: true,
+    //multipleStatements:true
 });
 
 con.query("SET NAMES 'utf8mb4';");
@@ -70,24 +82,30 @@ app.get("/sign-in",(req,res) => {
 app.post("/administrator",function(req,res){
     //  log(req.body);
     //アカウント照合
-    con.query("select count(*) from account where account_id = ? and PW = ?;",[req.body.account_id,req.body.PW],
-    function(error,resp){
-        if(error) throw error;
-        if(resp == 0){
-            //ログイン失敗
-            res.writeHead(302, {'Location': 'http://localhost:3000/sign-in'});
-        }else{
-            //成功
-            //認証トークン生成
-            //Coockieに保存
-            //表示
-            con.query("select show_id,show_name,administrator_id from entertainment_show;",function(error, response){
-                res.render("list.ejs",{list: response,kind_org:req.originalUrl});
-            })
+    try{
+        let [db_res] = await con.query("select count(*) from account where account_id = ? and PW = ?;",[req.body.account_id,req.body.PW]);
+    } catch (err) {
+        throw err;
+    }
+
+    if(db_res == 0){
+        //ログイン失敗
+        res.writeHead(302, {'Location': 'http://localhost:3000/sign-in'});
+    }else{
+        //成功
+        //認証トークン生成
+        //Coockieに保存
+        //表示
+        try{ 
+            db_res = await con.query(
+                "select show_id,show_name,administrator_id from entertainment_show where administrator_id = :ad_id;"
+                ,{ad_id:req.body.account_id});
+            res.render("list.ejs",{list:db_res,kind_org:req.originalUrl});
+        }catch(err){
+            throw err;
         }
-    })
-   
-});
+    }           
+})
 
 //管理画面ホーム
 app.get("/administrator-home",(req,res) => {
@@ -118,10 +136,16 @@ app.post("/sign-up/end",function(req,res){
     con.query(
         'INSERT INTO account (account_id, PW, SNSid, sns, mail) values (?,?,?,?,?)',
         [req.body.account_id,req.body.PW,req.body.SNS_id,
-            req.body.SNS,req.body.mail],(error, res) => {
-                console.log("DB insert success")
+        req.body.SNS,req.body.mail],(error, res) => {
+            con.commit(function(err) {
+                if (err) { 
+                connection.rollback(function() {
+                    throw err;
+                });
             }
-    )
+            console.log("DB insert success")
+            });
+        });
     //サーバアカウントに申請通知を出す(未実装)
     //通知DBに申請通知を入れて参照させるイメージ？
     //完了画面の表示
@@ -190,18 +214,34 @@ app.post("/show-report/end",(req,res) => {
         con.query('insert into report (shift,time_and_day,show_id) value (?,?,?);',
             [req.body,t,show_id],(error,r) => {
                 if (error) throw error;
+                con.commit(function(err) {
+                if (err) { 
+                connection.rollback(function() {
+                    throw err;
+                });
+            }
+            console.log("DB insert success")
+            });
+            report_id = r.insertId;
         });
         //登録したレコードのIDを取得
-        con.query('select last_insert_id();',(e,r) => {
-            report_id = r;
-        });
+        // con.query('select last_insert_id();',(e,r) => {
+        //     report_id = r;
+        // });
     };
     //notice
     con.query('insert into notice (show_id,type_of_message,content,report_id) value (?,?,?,?);',
         [show_id,type,other_content,r],(e,r) =>{
             if (e) throw e;
-        }
-    );
+            con.commit(function(err) {
+                if (err) { 
+                connection.rollback(function() {
+                    throw err;
+                });
+            }
+            console.log("DB insert success")
+            });
+        })
     res.sendFile(__dirname + "/public/html/shift_report_end.html")
 });
 
@@ -227,6 +267,7 @@ app.post("administrator/delete-notice",(req,res2) =>{
         con.query("delete from report where report_id = ?",[req.body.report_id]);
     }
     con.query("delete from notice where notice_id = ?",[req.body.notice_id]);
+    
     
 
     //ショー管理ページにリダイレクトする
@@ -259,6 +300,7 @@ app.get("administrator/report-detail",(req,res) => {
 });
 
 //notiが見れるように、notice_idをフォームで送るようにしてくれ
+//受け取った報告の詳細表示
 app.post("administrator/report-detail",(req,res) => {
     //報告編集確定・公開
     if(req.body["check-confirm"] == True){
@@ -323,6 +365,27 @@ app.post("administrator/report-detail",(req,res) => {
         
     }
 });
+
+
+//ポジション追加
+//http://localhost:3000/administrator/crate-new-position?show_id=
+app.get("administrator/create-new-position",(req,res) =>{
+    con.query("select roll_name,roll_id from roll where show_id = ?;"+
+        "select distinct roll.roll_name,entertainer.entertainer_name, \
+        roll.roll_id,entertainer.entertainer_id \
+        from Shift join roll using(roll_id) join entertainer using(entertainer_id) \
+        where show_id = ?;" +
+        "select * from entertainer;",
+        [parseInt(req.query.show_id),parseInt(req.query.show_id)],
+        (e,db_res)=>{
+            res.render("shift_report_form_edit.ejs",{
+                show_id:req.query.show_id, rolls:db_res[0], 
+                roll_cast: db_res[1],all_cast:db_res[2]});
+    });
+});
+
+//ポジション追加POST
+app.post("administrator/create-new-position",(req,res) =>{
 
 //＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 
@@ -482,6 +545,8 @@ con.query("select * from entertainment_show;",(e0,show_res)=>{
                     
                     });
             });
+
+
 
 
             //=================================================================================
