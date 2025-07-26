@@ -241,7 +241,7 @@ app.get("/show-admin",(req,res) => {
 
 //各ショー管理画面の報告削除用POST
 //http://localhost:3000/show-admin/delete-notice
-app.post("show-admin/delete-notice",(req,res) =>{
+app.post("/show-admin/delete-notice",(req,res) =>{
     //req.body.notice_idの報告を削除する
     let delete_notice = async() => {
         if(req.body.report_id != null){
@@ -261,7 +261,7 @@ app.post("show-admin/delete-notice",(req,res) =>{
 
 //報告詳細確認画面
 // http://localhost:3000/show-admin/report-detail?show_id= & report_id = 
-app.get("show-admin/report-detail",(req,res) => {
+app.get("/show-admin/report-detail",(req,res) => {
     let report_detail = async() => {
         let [show_name] = await con.query(SHOW_NAME_SQL,{s_id: parseInt(req.query.show_id)});
         let [roll_res] = await con.query(ROLL_SQL,{s_id: parseInt(req.query.show_id)});
@@ -282,9 +282,12 @@ app.get("show-admin/report-detail",(req,res) => {
 //notiが見れるように、notice_idをフォームで送るようにしてくれ
 //未登録を登録したあとに編集ページに戻ると、デビューが登録済みの表示になっちゃうので、
 //ステータスかなんかをやっぱりつけてやるべきかも
+//不明（誰だかわからない）をinsertしちゃうと、後から追加報告されたものを反映させたときにupdateしなきゃいけないので、
+//不明（id：１）はinsertしない
+//つまり表示は空欄になる
 //シフト編集・公開POST
 // http://localhost:3000/show-admin/report-detail
-app.post("administrator/report-detail",(req,res) => {
+app.post("/show-admin/report-detail",(req,res) => {
     let insert_shift = async() => {
         //シフト内容DBへ登録
         //req.body -> {time:時間,"roll_id":"entertainer_id" ...}
@@ -365,22 +368,24 @@ app.post("administrator/report-detail",(req,res) => {
 })
 
 //ポジション追加フォーム
-//http://localhost:3000/show-admin/crate-position?show_id=
-app.get("show-admin/create-position",(req,res) =>{
+//http://localhost:3000/show-admin/createPosition?show_id=1
+app.get("/show-admin/create-position",(req,res) =>{
+    console.log("a");
     let create_position = async() => {
+        let [show_name] = await con.query(SHOW_NAME_SQL,{s_id:parseInt(req.query.show_id)})
         let [roll_res] = await con.query(ROLL_SQL,{s_id:parseInt(req.query.show_id)})
         let [roll_cast_res] = await con.query(ROLL_CAST_SQL,{s_id:parseInt(req.query.show_id)})
         let [cast_res] = await con.query(ENT_SQL)
         res.render("shift_report_form_edit.ejs",{
-            show_id:req.query.show_id, rolls:roll_res, 
+            show_id:req.query.show_id, rolls:roll_res, show_name:show_name[0].show_name,
             roll_cast: roll_cast_res,all_cast:cast_res});
-        
     }
+    create_position();
 });
 
 //ポジション追加POST(ファイル表示してない！)
-//http://localhost:3000/show-admin/crate-position
-app.post("show-admin/create-position",(req,res) => {
+//http://localhost:3000/show-admin/create-position
+app.post("/show-admin/create-position",(req,res) => {
     let insert_new_roll = async() => {
         //役名登録
         let [ins_roll] = await con.query("insert into roll (roll_name,show_id) value (:name,:s_id)",
@@ -434,29 +439,34 @@ app.get("/entertainer-home",(req,res) => {
     entertainer_home();
 });
 
+//外部報告
+
+
 //各演者画面
 //ID１と２は不明と欠員なのでパス
-//http://localhost:3000/entertainer?entertainer_id= & y = & m = (表示させる年月、y = 2025,m = 07など)
+//http://localhost:3000/entertainer?entertainer_id=3&y=2025&m=7 (表示させる年月、y = 2025,m = 07など)
 app.get("/entertainer",(req,res)=>{
     let entertainer = async() => {
         let [ent_res] = await con.query("select entertainer_name from entertainer \
             where entertainer_id = :ent_id;",{ent_id:parseInt(req.query.entertainer_id)})
             //WHERE date BETWEEN '2020-07-01 00:00:00' AND '2020-07-31 23:59:59';
-        let start = "'" + req.query.y + "-" + req.query.m + "-01 00:00:00'"
+        let start = req.query.y + "-" + req.query.m + "-01 00:00:00"
         let last_date = new Date(parseInt(req.query.y), parseInt(req.query.m) + 1, 0).getDate();
         let end = ""
         if(last_date < 10){
-            end = "'" + req.query.y + "-" + req.query.m + "-0" + last_date + " 23:59:59'"
+            end =  req.query.y + "-" + req.query.m + "-0" + last_date + " 23:59:59"
         }else{
-            end ="'" + req.query.y + "-" + req.query.m + "-" + last_date + " 23:59:59"
+            end =req.query.y + "-" + req.query.m + "-" + last_date + " 23:59:59"
         }
-        let [shift_res] = await con.query("select tt.day_and_time,roll.roll_name,ES.show_name from shift \
+        let [shift_res] = await con.query("select tt.day_and_time,roll.roll_name,ES.show_name \
+            from shift \
             join Time_table as tt using(tt_id) \
             join roll using(roll_id) \
-            join entertainment_show as ES using(show_id) \
-            where Time_Table between :start and :end;",{start:start,end:end})
+            join entertainment_show as es on es.show_id = shift.show_id \
+            where tt.day_and_time between :start and :end;",{start:start,end:end})
         res.render("entertainer_home.ejs",{name:ent_res[0].entertainer_name,shift:shift_res});
     }
+    entertainer();
 });
 
 

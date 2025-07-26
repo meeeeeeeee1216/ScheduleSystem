@@ -67,15 +67,15 @@ con.query("SET NAMES 'utf8mb4';");
 
 
 
-app.get("/test",(req,res) => {
-    let test = async() => {
-        let [rows] = await con.query("select * from roll where show_id = :id;" 
-            + "select * from shift where show_id = :id"
-            ,{id: 1})
-        res.json(rows);
-    }
-    test();
-})
+// app.get("/test",(req,res) => {
+//     let test = async() => {
+//         let [rows] = await con.query("select * from roll where show_id = :id;" 
+//             + "select * from shift where show_id = :id"
+//             ,{id: 1})
+//         res.json(rows);
+//     }
+//     test();
+// })
 // con.query("select roll_name,roll_id from roll where show_id = ?;" + 
 //         "select tt.day_and_time,roll.roll_name,entertainer.entertainer_name,ES.show_name \
 //         from shift join entertainer using(entertainer_id) \

@@ -139,8 +139,8 @@ VALUE
 -- 不明と欠員は登録用にデフォルトセットする！
 INSERT INTO entertainer (entertainer_name)
 VALUE
-('不明')
-('欠員')
+('unknown'),
+('vacancy'),
 ('A'),
 ('B'),
 ('C'),
@@ -198,8 +198,8 @@ VALUE
 -- ('C2役',2,NULL),	
 -- ('D2役',2,NULL);
 
-insert into report (shift,time_and_day,show_id)
-VALUE
-({'A1役':'A','B1役':'B','C1役':'C'},'2025-06-10 10:00:00',)
+-- insert into report (shift,time_and_day,show_id)
+-- VALUE
+-- ({'A1役':'A','B1役':'B','C1役':'C'},'2025-06-10 10:00:00',)
 
 
