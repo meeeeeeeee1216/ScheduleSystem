@@ -71,9 +71,7 @@ FOREIGN KEY (show_id) references entertainment_show(show_id));
 -- shift -> {'A役':'〇さん', ...} idにしない
 CREATE TABLE SSS.report(
     report_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    shift JSON NOT NULL,
-    time_and_day DATETIME NOT NULL,
-    show_id INT
+    shift JSON NOT NULL
 );
 
 CREATE TABLE SSS.notice(
@@ -82,6 +80,7 @@ CREATE TABLE SSS.notice(
     type_of_message varchar(30) not null,
     content text,
     report_id INT,
+    time_and_day DATETIME NOT NULL,
     FOREIGN KEY (show_id) references entertainment_show(show_id),
     FOREIGN KEY (report_id) references report(report_id)
 );

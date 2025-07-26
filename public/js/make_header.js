@@ -23,7 +23,10 @@ div_ele.appendChild(title_ele);
 
 const signin_ele = document.createElement("button");
 signin_ele.id = "signin";
-signin_ele.onclick = "location.href='http://localhost:3000/sign-in'"
+
+signin_ele.addEventListener("click",function(){
+  location.replace("http://localhost:3000/sign-in?error=0");
+}, false);
 //チェック用
 // signin_ele.onclick = "signin.html";
 signin_ele.textContent = "管理者ログイン";
@@ -32,7 +35,10 @@ div_ele.appendChild(signin_ele);
 
 const signup_ele = document.createElement("button");
 signup_ele.id = "signup";
-signup_ele.onclick = "location.href='http://localhost:3000/sign-up'"
+
+signup_ele.addEventListener("click",function(){
+  location.replace("http://localhost:3000/sign-up");
+}, false);
 //チェック用
 // signin_ele.onclick = "signup.html";
 signup_ele.textContent = "管理者アカウント作成申請";

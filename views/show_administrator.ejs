@@ -52,9 +52,11 @@
                                 </td>
                             </tr>
                             <tr id = <%= "operate-" + element.notice_id %> style="display : none;">
-                                <td><button onclick=<%= "location.href='http://localhost:3000/administrator"
-                                + show.show_id + "/" + element.report_id +  "'"%> > 報告編集・公開</td>
-                                <form name="delete-notice" action="http://localhost:3000/administrator/delete-notice" method="post">
+                                <td><button onclick=
+                                    <%= "location.href='http://localhost:3000/administrator?show_id=" + show.show_id + "&report_id=" + element.report_id +  "'"%> > 報告編集・公開</td>
+                                <form name="delete-notice" 
+                                action=<%= "http://localhost:3000/show-admin/delete-notice?notice_id = " + element.notice_id %>
+                                     method="post">
                                     <input type="text" name="notice_id" maxlength="20" value = <%= element.notice_id %> 
                                     style="display:none;" requierd>
                                     <input type="text" name="report_id" maxlength="20" value = <%= element.report_id %> 

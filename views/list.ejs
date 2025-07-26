@@ -21,7 +21,7 @@
                 kind = "show";
             }else if(kind_org === "/entertainer"){
                 kind = "entertainer"
-            }else if(kind_org === "/administrator"){
+            }else if(kind_org === "/administrator-home"){
                 kind = "administrator"
             }
         %>
@@ -33,29 +33,29 @@
                         ショー一覧
                     <% } else if(kind_org === "/entertainer"){ %>
                         キャスト一覧
-                    <% } else if(kind_org === "/administrator"){ %>
+                    <% } else if(kind_org === "/administrator-home"){ %>
                         管理者ページ
                     <% } %>
                 </h2>
                 <ul>
                     <% for(let i = 0; i < list.length; i++){
                         if(kind_org === "/show"){
-                            var link = 'http://localhost:3000' + kind_org + '/' + list[i].show_id;
+                            var link = 'http://localhost:3000' + kind_org + '?show_id=' + list[i].show_id;
                             var name = list[i].show_name
                         }else if(kind_org === "/entertainer"){
-                            var link = 'http://localhost:3000' + kind_org + '/' + list[i].entertainer_id;
+                            var link = 'http://localhost:3000' + kind_org + '?entertainer_id=' + list[i].entertainer_id;
                             var name = list[i].entertainer_name
-                        }else if(kind_org === "/administrator"){
-                            var link = 'http://localhost:3000' + kind_org + '/' + list[i].show_id;
+                        }else if(kind_org === "/administrator-home"){
+                            var link = 'http://localhost:3000/show-admin?show_id=' + list[i].show_id;
                             var name = list[i].show_name
                         }%>
                         <li>
-                            <a href= <%= link %> >
+                            <a href = <%= link %> >
                             <%= name %> 
                             </a>
                         </li>
                     <%}%>
-                    <% if(kind_org == "/administrator"){ %>
+                    <% if(kind_org == "/administrator-home"){ %>
                         <li>
                             <a href="http://localhost:3000/administrator/show-reqest">新ショー登録申請</a>
                         </li>
