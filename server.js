@@ -40,7 +40,7 @@ app.use(bodyParser.json());
 
 //ホーム画面
 app.get('/home',(req,res) => {
-    res.sendFile(__dirname + "/public/html/home.html");
+    res.render("home.ejs");
 });
 
 
@@ -56,14 +56,17 @@ app.get("/sign-up",(req,res) => {
     });
 
     //完了画面
-    //DB登録、サーバアカウントに通知送信、authorityが1になったら承認（初期値NULL）
     app.post("/sign-up/end",function(req,res){
-        //サーバアカウントに申請通知を出す(未実装)
         let signup = async() => {
-            let [db_res] = await con.query(
-                'INSERT INTO account (account_id, PW, SNSid, sns, mail) values (?,?,?,?,?)',
-                [req.body.account_id,req.body.PW,req.body.SNS_id,
-                req.body.SNS,req.body.mail]
+            let content = "{account_id:" + req.body.account_id 
+            ",PW:" + req.body.PW
+            ",sns_id:" + req.body.SNS_id
+            ",sns:" + req.body.SNS + 
+            ",mail:" + req.body.mail + "}"
+            //サーバアカウントに申請通知を出す
+            await con.query(
+                'INSERT INTO notice (show_id,type_of_message,content) values (1,"アカウント申請",:content)',
+                {content:content}
             )
             await con.commit(function(err){
                 if(err) throw err;
@@ -76,15 +79,34 @@ app.get("/sign-up",(req,res) => {
     });
 });
 
+//アカウント承認（serverアカウントのショー管理画面から承認GET）
+app.get("/accept-account",(req,res) => {
+    let accept_account = async() => {
+        let [request_res] = await con.query("select content from noticce where notice_id = :notice_id",
+            {notice_id:req.query.notice_id})
+        let obj = JSON.parse(request_res[0].content);
+        //autority:2 -> 管理アカウント, authority:1 -> サーバーアカウント
+        await con.query("insert into account (account_id,PW,SNSid,authority,sns,mail) value (:id,:PW,:sns_id,2,:sns,:mail)",
+            {id:obj.account_id,PW:obj.PW,sns_id:obj.sns_id,mail:obj.mail,sns:parseInt(obj.sns)}
+        )
+        await con.commit(function(err){
+            if(err) throw err;
+            con.rollback()
+        })
+        //メール送信
+        //https://blog.capilano-fw.com/?p=5673#i
+
+        res.sendFile(__dirname + "/public/html/accept_end.html");
+    }
+})
+
 //ログイン画面
 app.get("/sign-in",(req,res) => {
-    console.log(req.query.error);
     res.render("signin.ejs",{error_flag :parseInt(req.query.error)});
 });
 
 //ログイン→管理画面へ遷移
 app.post("/administrator-home",function(req,res){
-    //  log(req.body);
     //アカウント照合
     let sign_in = async() => {
         let [db_res] = await con.query("select count(*) from account where account_id = ? and PW = ?;"
@@ -144,13 +166,13 @@ const NOTI_SQL = "select N.notice_id,N.type_of_message,N.content,\
         N.time_and_day,R.shift,R.report_id \
         from notice as N join report as R using(report_id) where N.show_id = :s_id;"
 //noticeからreportのデータを持ってくる
-const REPORT_SQL =  "select N.notice_id,N,time_and_day,R.shift,R.report_id \
+const REPORT_SQL =  "select N.notice_id,N.time_and_day,R.shift,R.report_id \
         from notice as N join report as R using(report_id) \
         where R.report_id = :r_id;"
 
 
 //=============================================================================================
-//ショー関連　表示側
+//ショー関連　一般表示
 //ショー一覧画面
 app.get("/show-home",(req,res) => {
     let show_home = async() => {
@@ -234,7 +256,7 @@ app.get("/show-admin",(req,res) => {
         res.render("show_administrator.ejs"
             ,{show_name:show_name[0].show_name,show_id:req.query.show_id,
                 notices:noti_res});
-    } 
+    }
     show_admin();
 
 })
@@ -308,8 +330,8 @@ app.post("/show-admin/report-detail",(req,res) => {
         //reportとnoticeを削除
         await con.query("delete from report where report_id = :r_id",
             {r_id:parseInt(req.body.report_id)});
-        await con.query("delete from notice where notice_id = :n_id",
-            {n_id:parseInt(req.body.notice_id)});
+        await con.query("delete from notice where report_id = :r_id",
+            {n_id:parseInt(req.body.report_id)});
         //公開画面へ遷移
         res.writeHead(302, {'Location': 'http://localhost:3000/show?show_id=' + req.body.show_id});
     }
@@ -451,7 +473,7 @@ app.get("/entertainer",(req,res)=>{
             where entertainer_id = :ent_id;",{ent_id:parseInt(req.query.entertainer_id)})
             //WHERE date BETWEEN '2020-07-01 00:00:00' AND '2020-07-31 23:59:59';
         let start = req.query.y + "-" + req.query.m + "-01 00:00:00"
-        let last_date = new Date(parseInt(req.query.y), parseInt(req.query.m) + 1, 0).getDate();
+        let last_date = new Date(parseInt(req.query.y), parseInt(req.query.m), 0).getDate();
         let end = ""
         if(last_date < 10){
             end =  req.query.y + "-" + req.query.m + "-0" + last_date + " 23:59:59"

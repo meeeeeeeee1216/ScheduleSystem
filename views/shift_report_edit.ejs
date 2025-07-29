@@ -9,11 +9,14 @@
         <script src = "../public/js/make_header.js" type="text/javascript"></script>
         <main>
             <div class="title">
-                <h2><%= show_name %> シフト報告</h2>
+                <h2>シフト報告編集</h2>
             </div>
             <!-- 最終登録用POST -->
-            <form action=<%= "http://localhost:3000/administrator/" + show_id + "/" + report_id %> method="post" name="form">
+            <form action="http://localhost:3000/show-admin/report-detail" method="post" name="form">
                 <div id="info">
+                    <!-- 確認用隠しフォーム -->
+                    <input type="text" name="show_id" value = <%= show_id %> require>
+                    <input type="text" name="report_id" value = <%= report_id %> require>
                     <p>＜ショー日時＞</p>
                     <input type="datetime-local" name="time" id = "input_tt" value=<%= td %> require>
                     <!-- チェック用非表示TTリスト -->
@@ -26,7 +29,7 @@
                 <div id="shift">
                     <p>＜キャスト名報告＞</p>
                     <p>新ポジションの報告があった場合には、
-                        <a href=<%= "http://localhost:3000/administrator/" + show_id + "/form-edit"%>>ここから</a>
+                        <a href=<%= "http://localhost:3000/show-admin/create-position?show_id=" + show_id%>>ここから</a>
                         ポジション名と出演したキャスト名を登録してください</p>
                     <!-- 送られるデータ：｛time:時間,"roll_id":"entertainer_id" or "debut_new" or "debut" ...｝ キャスト登録処理が終わったら全部entertainer_idになる-->
                     <% rolls.forEach(roll => { %>
@@ -47,7 +50,7 @@
                         <% } else if( shift[roll.roll_id] == "debut_new" ){ %>
                             <p style="display: inline-block">未登録キャストデビュー：</p> 
                             <input type="text" name=<%= "debut_new" + element.roll_id %> value=<%= shift["debut_new" + element.roll_id] %>>
-                            <p>ほかのショーも含め同一名でのキャスト登録ができません。同姓同名キャストが複数存在する場合は表記分けて登録してください。</p>
+                            <p>ほかのショーも含め同一名でのキャスト登録ができません。同姓同名キャストが複数存在する場合は表記を分けて登録してください。</p>
                             <p>同一名キャストの競合を避けるため、可能な限りSNSのアカウント名など正確な活動名で登録することを推奨します。</p>
                             <p>複数の呼称が存在するキャストについては（）などを用いてすべての表記を記載してください</p>
                             <!-- チェック用キャスト一覧リスト（非表示） -->

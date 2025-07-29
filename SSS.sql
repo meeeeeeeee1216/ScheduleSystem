@@ -15,7 +15,7 @@ authority tinyint not null);
 CREATE TABLE SSS.entertainment_show(
 show_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
 show_name VARCHAR(30) NOT NULL,
-administrator_id varchar(20) NOT NULL,
+administrator_id JSON NOT NULL,
 FOREIGN KEY (administrator_id) references account(account_id));
 
 -- CREATE TABLE SSS.co_editor(
@@ -76,11 +76,11 @@ CREATE TABLE SSS.report(
 
 CREATE TABLE SSS.notice(
     notice_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    show_id INT not null,
+    show_id INT NOT NULL,
     type_of_message varchar(30) not null,
     content text,
     report_id INT,
-    time_and_day DATETIME NOT NULL,
+    time_and_day DATETIME,
     FOREIGN KEY (show_id) references entertainment_show(show_id),
     FOREIGN KEY (report_id) references report(report_id)
 );
@@ -94,9 +94,10 @@ INSERT INTO account(account_id, PW, SNS_id, authority,sns,mail) VALUE
 ('show1', 'show_pass1111','show1_sns',2,2,"mail2@samplemail.com"),
 ('show2', 'show_pass2222','show2_sns',2,2,"mail3@samplemail.com");
 
+-- ID：１番はサーバーアカウント通知確認用
 INSERT INTO entertainment_show (show_name,administrator_id)
 VALUE
-('restaurant_show','show0'),('escape_show','show1');
+('account_request','server'),('restaurant_show','show0'),('escape_show','show1');
 
 -- INSERT INTO co_editor (show_id,account_id)
 -- VALUE

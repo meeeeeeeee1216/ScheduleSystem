@@ -13,7 +13,9 @@
                 <h2><%= show_name %> 管理ページ</h2>
             </div>
             <div>
-                <p><a href= <%= "http://localhost:3000/show/" + show_id %>> 公開ページはこちらから</a></p>
+                <% if(show_id != 1){ %>
+                    <p><a href= <%= "http://localhost:3000/show/" + show_id %>> 公開ページはこちらから</a></p>
+                <% } %>
             </div>
             <div class="main">
                 <h3>報告一覧</h3>
@@ -52,11 +54,17 @@
                                 </td>
                             </tr>
                             <tr id = <%= "operate-" + element.notice_id %> style="display : none;">
-                                <td><button onclick=
-                                    <%= "location.href='http://localhost:3000/administrator?show_id=" + show.show_id + "&report_id=" + element.report_id +  "'"%> > 報告編集・公開</td>
+                                <% if(show_id != 1){ %>
+                                    <td><a href =
+                                        <%= "location.href='http://localhost:3000/show-admin/report-detail?show_id=" + show.show_id + "&report_id=" + element.report_id +  "'"%> >
+                                        報告編集・公開 </a></td>
+                                <% }else{ %>
+                                    <td><form action= <%= "http://localhost:3000/accept-account?notice_id = " + element.notice_id %> method="get">
+                                            <button type="submit">申請承認</td>
+                                <% } %>
+
                                 <form name="delete-notice" 
-                                action=<%= "http://localhost:3000/show-admin/delete-notice?notice_id = " + element.notice_id %>
-                                     method="post">
+                                action="http://localhost:3000/show-admin/delete-notice" method="post">
                                     <input type="text" name="notice_id" maxlength="20" value = <%= element.notice_id %> 
                                     style="display:none;" requierd>
                                     <input type="text" name="report_id" maxlength="20" value = <%= element.report_id %> 
