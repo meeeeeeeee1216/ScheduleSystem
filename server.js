@@ -498,7 +498,8 @@ app.post("/show-admin/announce",(req,res) => {
 //http://localhost:3000/entertainer-home
 app.get("/entertainer-home",(req,res) => {
     let entertainer_home = async() => {
-        let [ent_res] = await con.query(ENT_SQL)
+        //ID１と２は不明と欠員なのでパス
+        let [ent_res] = await con.query("select * from entertainer where entertainer_id > 2;")
         res.render("list.ejs",{list:ent_res,kind_org:req.originalUrl});
     }
     entertainer_home();
@@ -508,7 +509,6 @@ app.get("/entertainer-home",(req,res) => {
 
 
 //各演者画面
-//ID１と２は不明と欠員なのでパス
 //http://localhost:3000/entertainer?entertainer_id=3&y=2025&m=7 (表示させる年月、y = 2025,m = 07など)
 app.get("/entertainer",(req,res)=>{
     let entertainer = async() => {
