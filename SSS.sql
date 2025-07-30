@@ -85,6 +85,16 @@ CREATE TABLE SSS.notice(
     FOREIGN KEY (report_id) references report(report_id)
 );
 
+-- アナウンス
+CREATE TABLE SSS.announce(
+    announce_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    d DATE NOT NULL,
+    show_id INT NOT NULL,
+    title text not null,
+    content text not null,
+    FOREIGN KEY (show_id) references entertainment_show(show_id)
+);
+
 
 
 -- レコード作成

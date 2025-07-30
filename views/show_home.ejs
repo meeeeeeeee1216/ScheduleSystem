@@ -13,7 +13,7 @@
                 <h2><%= show_name %></h2>
             </div>
             <div>
-                <p><a href= <%= "http://localhost:3000/show/" + show_id + "/report" %>> シフト報告はこちらから</a></p>
+                <p><a href= <%= "http://localhost:3000/show-report?show_id=" + show_id %>> シフト報告はこちらから</a></p>
             </div>
             <div class="shift-calender">
                 <% 
@@ -92,7 +92,28 @@
                 <h3>管理者からのお知らせ</h3>
                 <table>
                     <!-- テーブルでお知らせ一覧表示 -->
+                    <tr>
+                        <th>日時</th>
+                        <th>件名</th>
+                        <th>詳細</th>
+                    </tr>
+                    <% announce.forEach(an => { %>
+                        <tr>
+                            <td><%= an.d %></td>
+                            <td><%= an.title %></td>
+                            <td><button id = <%= "open" + an.announce_id %> onClick="show_detail(this)" > 詳細表示</td>
+                        </tr>
+                        <tr>
+                            <td id = <% "content" + an.announce_id %> style="display: none;" ><%= an.content %></td>
+                        </tr>
+                    });
                 </table>
+                <script type="text/javascript">
+                    function show_detail(e){
+                        let id = e.id.slice(4);
+                        document.getElementById("content" + id).style.display = "contents";
+                    }
+                </script>
             </div>
         </main>
    </body>

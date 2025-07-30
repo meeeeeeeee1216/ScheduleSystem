@@ -11,8 +11,7 @@
             <div class="title">
                 <h2><%= show_name %> 新ポジション登録</h2>
             </div>
-            <form action=<%= "http://localhost:3000/administrator/" + show_id + "/form-edit" %> 
-                method="post" name="form">
+            <form action=<%= "http://localhost:3000/show-admin/create-position?show_id=" + show_id %> method="post">
                 <div id="info">
                     <h3>＜ポジションが増えた　公演の日時＞</h3>
                     <input type="datetime-local" name="time" require>
@@ -37,7 +36,7 @@
                 <button name="send" type="submit" onSubmit="return check_Unregistered">追加</button>
             </form>
 
-            <sctipt type="text/javascript">
+            <script type="text/javascript">
                 function check_Unregistered(){
                     const all_cast = document.getElementById("all_cast").options;
                     let input_name = document.getElementById("ent_name_text").value;
@@ -49,7 +48,7 @@
                     }
                     return ture
                 };
-            </sctipt>
+            </script>
             
         </main>
    </body>

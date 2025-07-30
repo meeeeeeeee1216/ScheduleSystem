@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>ショーシフト管理システム</title>
+    </head>
+    <body>
+        
+        <script src = "../public/js/make_header.js" type="text/javascript"></script>
+        <main>
+            <div class="title">
+                <h2><%= show_name %> お知らせ作成</h2>
+            </div>
+            <form action=<%= "http://localhost:3000/show-admin/announce?show_id=" + show_id %> 
+                method="post" name="form">
+                <div id="announce-title">
+                    <p>件名</p>
+                    <input type="text" name="announce-title" require>
+                </div>
+                <div id="content">
+                    <p>本文</p>
+                    <textarea name="other" rows="10" cols="60"></textarea>
+                <input type="text" name = "show_id" style="display: none;" value = <%= show_id %> requierd>
+                <button name="send" type="submit">報告</button>
+            </form>
+            
+        </main>
+   </body>
+</html>

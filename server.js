@@ -189,7 +189,9 @@ app.get("/show",(req,res) => {
         let [show_name] = await con.query(SHOW_NAME_SQL,{s_id: parseInt(req.query.show_id)});
         let [shift_res] = await con.query(SHIFT_SQL,{s_id: parseInt(req.query.show_id)});
         let [roll_res] = await con.query(ROLL_SQL,{s_id: parseInt(req.query.show_id)});
+        let [announce_res] = await con.query("select * from announce where show_id = :s_id",{s_id: parseInt(req.query.show_id)})
         res.render("show_home.ejs",{shift_res:shift_res,rolls:roll_res,
+            announce:announce_res,
             show_name:show_name[0].show_name,show_id:req.query.show_id});
     }
     show();
@@ -238,7 +240,10 @@ app.post("/show-report/end",(req,res) => {
             (:s_id,:type,:cont,:r_id);",
         {s_id:show_id, type: type, cont: other_content,r_id :report_id})
 
-        await con.commit();
+        await con.commit(function(err){
+            if(err) throw err;
+            con.rollback()
+        })
     }
     insert_report();
     res.sendFile(__dirname + "/public/html/shift_report_end.html")
@@ -273,7 +278,10 @@ app.post("/show-admin/delete-notice",(req,res) =>{
         await con.query("delete from notice where notice_id = :n_id",
             {n_id: parseInt(req.body.notice_id)});
         
-        await con.commit();
+        await con.commit(function(err){
+            if(err) throw err;
+            con.rollback()
+        })
     }
     delete_notice();
     //ショー管理ページにリダイレクトする
@@ -332,6 +340,12 @@ app.post("/show-admin/report-detail",(req,res) => {
             {r_id:parseInt(req.body.report_id)});
         await con.query("delete from notice where report_id = :r_id",
             {n_id:parseInt(req.body.report_id)});
+
+        await con.commit(function(err){
+            if(err) throw err;
+            con.rollback()
+        })
+
         //公開画面へ遷移
         res.writeHead(302, {'Location': 'http://localhost:3000/show?show_id=' + req.body.show_id});
     }
@@ -364,7 +378,11 @@ app.post("/show-admin/report-detail",(req,res) => {
             rolls.forEach(roll => {
                 let ent_id = insert_ent(roll);
                 req.body.shift[roll.roll_id] = "debut";
-                req.body.shift["debut" + element.roll_id] = new_ent_id;
+                req.body.shift["debut" + element.roll_id] = ent_id;
+            })
+            await con.commit(function(err){
+                if(err) throw err;
+                con.rollback()
             })
             //render
             let [show_name] = await con.query(SHOW_NAME_SQL,{s_id: parseInt(req.body.show_id)});
@@ -390,9 +408,8 @@ app.post("/show-admin/report-detail",(req,res) => {
 })
 
 //ポジション追加フォーム
-//http://localhost:3000/show-admin/createPosition?show_id=1
+//http://localhost:3000/show-admin/create-position?show_id=1
 app.get("/show-admin/create-position",(req,res) =>{
-    console.log("a");
     let create_position = async() => {
         let [show_name] = await con.query(SHOW_NAME_SQL,{s_id:parseInt(req.query.show_id)})
         let [roll_res] = await con.query(ROLL_SQL,{s_id:parseInt(req.query.show_id)})
@@ -444,8 +461,34 @@ app.post("/show-admin/create-position",(req,res) => {
         await con.query("insert into shift (tt_id,roll_id,entertainer_id,show_id) \
             value (:tt_id,:r_id,:ent_id,:s_id)",
             {tt_id:tt_id,r_id:ins_roll.insertId,ent_id:ent_id,s_id:parseInt(req.body.show_id)})
+        
+        await con.commit(function(err){
+            if(err) throw err;
+            con.rollback()
+        })
     }
     insert_new_roll();
+});
+
+//アナウンス追加
+app.get("/show-admin/announce",(req,res) => {
+    res.render("announce_form.ejs",{show_id:req.query.show_id})
+});
+//アナウンス追加POST
+app.post("/show-admin/announce",(req,res) => {
+    let insert_announce = async () => {
+        let today = new Date();
+        let d = today.getFullYear() + "-" + today.getMonth() + "-" + today.getDate();
+        await con.query("insert into announce (d,show_id,title,content) value (:date,:s_id,:title,:content)",
+            {s_id:parseInt(req.body.show_id),title:req.body.title,content:req.body.content,date:d}
+        );
+        await con.commit(function(err){
+            if(err) throw err;
+            con.rollback()
+        })
+    }
+    //公開画面へ遷移
+    res.writeHead(302, {'Location': 'http://localhost:3000/show?show_id=' + req.body.show_id});
 });
 
 //==================================================================================
