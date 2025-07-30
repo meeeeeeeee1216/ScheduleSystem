@@ -9,14 +9,21 @@
         <script src = "../public/js/make_header.js" type="text/javascript"></script>
         <main>
             <div class="title">
-                <h2>シフト報告編集</h2>
+                <h2><%=title%></h2>
             </div>
             <!-- 最終登録用POST -->
-            <form action="http://localhost:3000/show-admin/report-detail" method="post" name="form">
+            <% if(title="公開済みシフトの編集"){
+                let post_to="http://localhost:3000/show-admin/shift-edit"
+            }else{
+                let post_to = "http://localhost:3000/show-admin/report-detail"
+            }%>
+            <form action=<%= post_to %> method="post" name="form">
                 <div id="info">
                     <!-- 確認用隠しフォーム -->
                     <input type="text" name="show_id" value = <%= show_id %> require>
-                    <input type="text" name="report_id" value = <%= report_id %> require>
+                    <% if(title != "公開済みシフトの編集"){ %>
+                        <input type="text" name="report_id" value = <%= report_id %> require>
+                    <% } %>
                     <p>＜ショー日時＞</p>
                     <input type="datetime-local" name="time" id = "input_tt" value=<%= td %> require>
                     <!-- チェック用非表示TTリスト -->
@@ -84,7 +91,9 @@
                 </div>
                 <input type="checkbox" id="check-confirm" name="check-confirm">
                 <button name="send" type="submit" onSubmit="check_confirm(this)">確定して公開</button>
-                <p>確定すると報告された情報は削除されます</p>
+                <% if(title != "公開済みシフトの編集"){ %>
+                    <p>確定すると報告された情報は削除されます</p>
+                <% } %>
             </form>
             <script type="text/javascript">
                 function check_new_ent(e){

@@ -150,7 +150,7 @@ app.get("/administrator-home",(req,res) => {
 //ショー関連sql
 const SHOW_NAME_SQL = "select show_name from entertainment_show where show_id = :s_id;"
 const ROLL_SQL = "select roll_name,roll_id from roll where show_id = :s_id;"
-const SHIFT_SQL = "select tt.day_and_time,roll.roll_name,entertainer.entertainer_name,ES.show_name \
+const SHIFT_SQL = "select tt.day_and_time,tt.tt_id,roll.roll_name,entertainer.entertainer_name,ES.show_name \
         from shift join entertainer using(entertainer_id) \
         join roll using(roll_id) \
         join entertainment_show as ES on ES.show_id = shift.show_id \
@@ -301,7 +301,7 @@ app.get("/show-admin/report-detail",(req,res) => {
         let [report_res] = await con.query(REPORT_SQL,{r_id:parseInt(req.query.report_id)})
 
          res.render("shift_report_edit.ejs",
-                {show_id:req.query.show_id,show_name:show_name[0].show_name,
+                {title:"シフト報告の編集・公開",show_id:req.query.show_id,show_name:show_name[0].show_name,
                 rolls:roll_res,roll_cast:roll_cast_res,all_cast:cast_res,tt:tt_res
                 ,shift:JSON.parse(report_res[0].shift),td:report_res[0].time_and_day,
                 report_id:report_res[0].report_id});
@@ -397,7 +397,7 @@ app.post("/show-admin/report-detail",(req,res) => {
             delete req.body.time, req.body.report_id,req.body.show_id ;
             
             res.render("shift_report_edit.ejs",
-                {show_id:show_id,show_name:show_name,
+                {title:"シフト報告の編集・公開",show_id:show_id,show_name:show_name,
                 rolls:roll_res,roll_cast:roll_cast_res,tt:tt_res,all_cast:cast_res
                 ,shift:req.body,td:td,
                 report_id:report_id}
@@ -474,6 +474,7 @@ app.post("/show-admin/create-position",(req,res) => {
 app.get("/show-admin/announce",(req,res) => {
     res.render("announce_form.ejs",{show_id:req.query.show_id})
 });
+
 //アナウンス追加POST
 app.post("/show-admin/announce",(req,res) => {
     let insert_announce = async () => {
@@ -487,9 +488,89 @@ app.post("/show-admin/announce",(req,res) => {
             con.rollback()
         })
     }
+    insert_announce();
     //公開画面へ遷移
     res.writeHead(302, {'Location': 'http://localhost:3000/show?show_id=' + req.body.show_id});
 });
+
+//公開済みシフト編集
+//ログインした状態で　http://localhost:3000/show?show_id=　に行くとここのリンクが表示される
+//http://localhost:3000/show-admin/shift-edit?show_id= & tt_id= 
+app.get("/show-admin/shift-edit",(req,res) => {
+    let shift_edit = async() => {
+        let [show_name] = await con.query(SHOW_NAME_SQL,{s_id: parseInt(req.query.show_id)});
+        let [roll_res] = await con.query(ROLL_SQL,{s_id: parseInt(req.query.show_id)});
+        let [roll_cast_res] = await con.query(ROLL_CAST_SQL,{s_id: parseInt(req.query.show_id)});
+        let [tt_res] = await con.query(TT_SQL,{s_id: parseInt(req.query.show_id)});
+        let [cast_res] = await con.query(ENT_SQL);
+        let [day_and_time] = await con.query("select day_and_time from Time_Table where tt_id = :tt_id"
+            ,{tt_id:parseInt(req.query.tt_id)})
+        let [shift_res] = await con.query("select roll.roll_id,entertainer.entertainer_id \
+        from shift join entertainer using(entertainer_id) \
+        join roll using(roll_id) \
+        join entertainment_show as ES on ES.show_id = shift.show_id \
+        join time_table as tt using(tt_id) \
+        where shift.show_id = :s_id && tt.tt_id = :tt_id;" 
+        ,{s_id:parseInt(req.query.show_id),tt_id:parseInt(req.query.tt_id)});
+
+        let render_shift = {}
+        shift_res.forEach(shift => {
+            render_shift[shift.roll_id] = shift.entertainer_id;
+        })
+
+        res.render("shift_report_edit.ejs",
+            {title:"公開済みシフトの編集",show_id:req.query.show_id,show_name:show_name[0].show_name,
+            rolls:roll_res,roll_cast:roll_cast_res,all_cast:cast_res,tt:tt_res
+            ,shift:render_shift,td:day_and_time});
+    }
+})
+
+//公開済みシフト編集POST
+app.post("/show-admin/shift-edit",(req,res) => {
+    let change_shift = async() => {
+        //シフトテーブルの中身UPDATE
+    }
+
+    //編集確定
+    if(req.body["check-confirm"] == True){ 
+        change_shift();
+    //未登録キャスト登録(まだ書き換えてない)
+    }else{
+        async() => {
+            let [rolls] = await con.query(ROLL_SQL,{s_id:req.body.show_id});
+            rolls.forEach(roll => {
+                let ent_id = insert_ent(roll);
+                req.body.shift[roll.roll_id] = "debut";
+                req.body.shift["debut" + element.roll_id] = ent_id;
+            })
+            await con.commit(function(err){
+                if(err) throw err;
+                con.rollback()
+            })
+            //render
+            let [show_name] = await con.query(SHOW_NAME_SQL,{s_id: parseInt(req.body.show_id)});
+            let [roll_res] = await con.query(ROLL_SQL,{s_id: parseInt(req.body.show_id)});
+            let [roll_cast_res] = await con.query(ROLL_CAST_SQL,{s_id: parseInt(req.body.show_id)});
+            let [tt_res] = await con.query(TT_SQL,{s_id: parseInt(req.body.show_id)});
+            let [cast_res] = await con.query(ENT_SQL);
+
+            let td = req.body.time;
+            let report_id = req.body.report_id;
+            let show_id = req.body.show_id;
+            delete req.body.time, req.body.report_id,req.body.show_id ;
+            
+            res.render("shift_report_edit.ejs",
+                {title:"シフト報告の編集・公開",show_id:show_id,show_name:show_name,
+                rolls:roll_res,roll_cast:roll_cast_res,tt:tt_res,all_cast:cast_res
+                ,shift:req.body,td:td,
+                report_id:report_id}
+            );
+
+        }
+    }
+    
+})
+
 
 //==================================================================================
 //演者関連画面

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>ショーシフト管理システム</title>
+    </head>
+    <body>
+        
+        <script src = "../public/js/make_header.js" type="text/javascript"></script>
+        <main>
+            
+            <div class="title">
+                <h2><%= show_name %> 管理者用公開済みシフト編集ページ</h2>
+            </div>
+            <div>
+                <p><a href= <%= "http://localhost:3000/show-report?show_id=" + show_id %>> 新しいシフト報告はこちらから</a></p>
+                <p>日付をクリックするとそのショーのシフトを編集できます</p>
+            </div>
+            <div class="shift-calender">
+                <% 
+                    //shift_resをtt_idをカギにした連想配列に変える
+                    //ex -> {tt_id:["yyyy/mm/dd tt:mm:ss",{"roll_name":"entertainer_name"}]}
+                    var shift = {}
+                    shift_res.forEach(s => {
+                        if(s.tt_id in shift){
+                            //何もしない
+                        }else{
+                            shift[s.tt_id] = [];
+                        }
+                        shift[s.tt_id].push(s.day_and_time)
+                        shift.push({s.roll_name:s.entertainer_name});
+                    });
+                %>
+                <table border="2">
+                    <thead>
+                        <tr id="calendar">
+                            <th> 役/日</th>
+                            <!-- 日付生成 -->
+                             <% for(var key in shift){ 
+                                    key_split = shift[key][0].split(" ");
+                                    const ENG_TO_NUM_MONTH = {
+                                        "Jan":1,
+                                        "Feb":2,
+                                        "Mar":3,
+                                        "Apr":4,
+                                        "May":5,
+                                        "Jun":6,
+                                        "Jul":7,
+                                        "Aug":8,
+                                        "Sep":9,
+                                        "Oct":10,
+                                        "Nov":11,
+                                        "Dec":12
+                                    };
+                                    const ENG_TO_JA_DAY = {
+                                        "Sun":"(日)",
+                                        "Mon":"(月)",
+                                        "Tue":"(火)",
+                                        "Wed":"(水)",
+                                        "Thu":"(木)",
+                                        "Fri":"(金)",
+                                        "Sat":"(土)",
+                                    };
+                                    %>
+                                    <th> 
+                                        <a href= <%="http://localhost:3000/show-admin/shift-edit?show_id="+ show_id + "&tt_id=" + key %>>
+                                            <%= key_split[3] + "/" + ENG_TO_NUM_MONTH[key_split[1]] + "/" + key_split[2] + 
+                                            ENG_TO_JA_DAY[key_split[0]]%> <br>
+                                            <%= key_split[4].slice(0,5) %> 
+                                        </a>
+                                    </th>
+                             <%};%>
+                             
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 一行目はthでヘッダー扱いにして役名一覧 -->
+                        <% for(var i = 0; i< rolls.length ; i++ ) {%>
+                            <tr>
+                                <th>
+                                    <%= rolls[i].roll_name %>
+                                </th>
+                                <!-- ここにシフトの内容を入れる -->
+                                 <% for(var key in shift){ %>
+                                    <td> <%= shift[key][1][rolls[i].roll_name] %></td>
+                                <%};%>
+                            </tr>
+                        <% }; %>
+                        <!-- 備考欄 -->
+                        <tr>
+                            <th>備考</th>
+                        </tr>
+                    </tbody>
+            </div>
+            <div class="admi-info">
+                <h3>管理者からのお知らせ</h3>
+                <table>
+                    <!-- テーブルでお知らせ一覧表示 -->
+                    <tr>
+                        <th>日時</th>
+                        <th>件名</th>
+                        <th>詳細</th>
+                    </tr>
+                    <% announce.forEach(an => { %>
+                        <tr>
+                            <td><%= an.d %></td>
+                            <td><%= an.title %></td>
+                            <td><button id = <%= "open" + an.announce_id %> onClick="show_detail(this)" > 詳細表示</td>
+                        </tr>
+                        <tr>
+                            <td id = <% "content" + an.announce_id %> style="display: none;" ><%= an.content %></td>
+                        </tr>
+                    });
+                </table>
+                <script type="text/javascript">
+                    function show_detail(e){
+                        let id = e.id.slice(4);
+                        document.getElementById("content" + id).style.display = "contents";
+                    }
+                </script>
+            </div>
+        </main>
+   </body>
+</html>
