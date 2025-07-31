@@ -60,7 +60,7 @@
                                             <%= "location.href='http://localhost:3000/show-admin/report-detail?show_id=" + show.show_id + "&report_id=" + element.report_id +  "'"%> >
                                             報告編集・公開 </a></td>
                                     <% }else{ %>
-                                        <td><form action= <%= "http://localhost:3000/accept-account?notice_id = " + element.notice_id %> method="get">
+                                        <td><form action= <%= "http://localhost:3000/accept-request?notice_id = " + element.notice_id %> method="get">
                                                 <button type="submit">申請承認</td>
                                     <% } %>
 

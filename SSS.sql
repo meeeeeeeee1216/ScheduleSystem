@@ -76,7 +76,7 @@ CREATE TABLE SSS.report(
 
 CREATE TABLE SSS.notice(
     notice_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    show_id INT NOT NULL,
+    show_id INT not null,
     type_of_message varchar(30) not null,
     content text,
     report_id INT,
@@ -107,7 +107,7 @@ INSERT INTO account(account_id, PW, SNS_id, authority,sns,mail) VALUE
 -- ID：１番はサーバーアカウント通知確認用
 INSERT INTO entertainment_show (show_name,administrator_id)
 VALUE
-('account_request','server'),('restaurant_show','show0'),('escape_show','show1');
+('request','server'),('restaurant_show','show0'),('escape_show','show1');
 
 -- INSERT INTO co_editor (show_id,account_id)
 -- VALUE

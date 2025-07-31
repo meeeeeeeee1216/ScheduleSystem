@@ -16,6 +16,10 @@
                     <p>ショーの名前</p>
                     <p>略称ではなく、正式名称で登録してください。</p>
                     <input type="text" required maxlength="30">
+                    <p>ショー開始日</p>
+                    <input type="datetime-local" name="start_day" require>
+                    <p>千秋楽日</p>
+                    <input type="datetime-local" name="end_day">
                     <!-- 管理者のID,ログイン情報から持ってくる -->
                     <input type="text" style="display: none;" value =<%= %> required>
                     <button type="submit">申請</button>

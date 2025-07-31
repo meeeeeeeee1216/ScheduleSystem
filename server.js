@@ -5,7 +5,6 @@ const PORT = 3000;
 const mysql = require("mysql2/promise");
 const path = require("path");
 const bodyParser = require("body-parser");
-const fs = require("fs");
 const ejs = require("ejs");
 app.set('view engine','ejs')
 
@@ -63,6 +62,8 @@ app.get("/sign-up",(req,res) => {
             ",sns_id:" + req.body.SNS_id
             ",sns:" + req.body.SNS + 
             ",mail:" + req.body.mail + "}"
+
+            let content = JSON.stringify(req.body);
             //サーバアカウントに申請通知を出す
             await con.query(
                 'INSERT INTO notice (show_id,type_of_message,content) values (1,"アカウント申請",:content)',
@@ -80,24 +81,29 @@ app.get("/sign-up",(req,res) => {
 });
 
 //アカウント承認（serverアカウントのショー管理画面から承認GET）
-app.get("/accept-account",(req,res) => {
-    let accept_account = async() => {
+app.get("/accept-request",(req,res) => {
+    let accept = async() => {
         let [request_res] = await con.query("select content from noticce where notice_id = :notice_id",
             {notice_id:req.query.notice_id})
         let obj = JSON.parse(request_res[0].content);
-        //autority:2 -> 管理アカウント, authority:1 -> サーバーアカウント
-        await con.query("insert into account (account_id,PW,SNSid,authority,sns,mail) value (:id,:PW,:sns_id,2,:sns,:mail)",
-            {id:obj.account_id,PW:obj.PW,sns_id:obj.sns_id,mail:obj.mail,sns:parseInt(obj.sns)}
-        )
-        await con.commit(function(err){
-            if(err) throw err;
-            con.rollback()
-        })
+        //アカウントの承認
+        if("account_id" in obj.key){
+            //autority:2 -> 管理アカウント, authority:1 -> サーバーアカウント
+            await con.query("insert into account (account_id,PW,SNSid,authority,sns,mail) value (:id,:PW,:sns_id,2,:sns,:mail);",
+                {id:obj.account_id,PW:obj.PW,sns_id:obj.sns_id,mail:obj.mail,sns:parseInt(obj.sns)}
+            )
+        }else if("show_name" in obj.key){
+            await con.query("insert into entertainment_show (show_name) value (:name);",
+                {name:obj["name"]}
+            )
+        }
+        await con.commit()
         //メール送信
         //https://blog.capilano-fw.com/?p=5673#i
 
         res.sendFile(__dirname + "/public/html/accept_end.html");
     }
+    accept();
 })
 
 //ログイン画面
@@ -145,6 +151,22 @@ app.get("/administrator-home",(req,res) => {
     }
     ad_home()
 });
+
+//新ショー作成申請
+app.get("/show-admin/request-new",(req,res) => {
+    //ログイン確認
+    //IDを送る
+    res.render("new_show_request.ejs")
+});
+
+app.post("/show-admin/request-new",(req,res) => {
+    async() => {
+        let content = JSON.stringify(req.body);
+        await con.query("insert into notice (type_of_message,content,show_id) value ('新ショー申請',:content,1);",
+            {content:content}
+        )
+    }
+})
 
 //=========================================================================================
 //ショー関連sql
@@ -285,7 +307,7 @@ app.post("/show-admin/delete-notice",(req,res) =>{
     }
     delete_notice();
     //ショー管理ページにリダイレクトする
-    res.writeHead(302, {'Location': 'http://localhost:3000/administrator?show_id=' + req.body.show_id});
+    res.writeHead(302, {'Location': 'http://localhost:3000/show-admin?show_id=' + req.body.show_id});
 
 });
 
@@ -371,7 +393,7 @@ app.post("/show-admin/report-detail",(req,res) => {
 
     
     //報告公開
-    if(req.body["check-confirm"] == True){ 
+    if(req.body["check-confirm"] == true){ 
         insert_shift();
     //未登録キャスト登録
     }else{
@@ -417,7 +439,7 @@ app.get("/show-admin/create-position",(req,res) =>{
         let [roll_res] = await con.query(ROLL_SQL,{s_id:parseInt(req.query.show_id)})
         let [roll_cast_res] = await con.query(ROLL_CAST_SQL,{s_id:parseInt(req.query.show_id)})
         let [cast_res] = await con.query(ENT_SQL)
-        res.render("shift_report_form_edit.ejs",{
+        res.render("create_position.ejs",{
             show_id:req.query.show_id, rolls:roll_res, show_name:show_name[0].show_name,
             roll_cast: roll_cast_res,all_cast:cast_res});
     }
@@ -547,7 +569,7 @@ app.post("/show-admin/shift-edit",(req,res) => {
     }
 
     //編集確定
-    if(req.body["check-confirm"] == True){ 
+    if(req.body["check-confirm"] == true){ 
         change_shift();
     //未登録キャスト登録(まだ書き換えてない)
     }else{
