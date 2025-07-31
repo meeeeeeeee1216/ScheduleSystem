@@ -309,7 +309,7 @@ app.get("/show-admin/report-detail",(req,res) => {
     report_detail()
 });
 
-//notiが見れるように、notice_idをフォームで送るようにしてくれ
+
 //未登録を登録したあとに編集ページに戻ると、デビューが登録済みの表示になっちゃうので、
 //ステータスかなんかをやっぱりつけてやるべきかも
 //不明（誰だかわからない）をinsertしちゃうと、後から追加報告されたものを反映させたときにupdateしなきゃいけないので、
@@ -328,12 +328,14 @@ app.post("/show-admin/report-detail",(req,res) => {
         delete req.body.time,req.body["check-conform"]
         //ポジション毎にShiftについか
         for(var roll_id in req.body){
-            await con.query("insert into shift (tt_id,roll_id,entertainer_id,show_id) \
-                value (:tt_id,:r_id,:ent_id,:s_id)",
-                {tt_id:parseInt(ins_tt.insertId),
-                r_id:parseInt(roll_id),ent_id:parseInt(req.body[roll_id]),
-                s_id:parseInt(req.body.show_id)}
-            );
+            if(parseInt(req.body[roll_id]) != 1){
+                await con.query("insert into shift (tt_id,roll_id,entertainer_id,show_id) \
+                    value (:tt_id,:r_id,:ent_id,:s_id)",
+                    {tt_id:parseInt(ins_tt.insertId),
+                    r_id:parseInt(roll_id),ent_id:parseInt(req.body[roll_id]),
+                    s_id:parseInt(req.body.show_id)}
+                );
+            }
         }
         //reportとnoticeを削除
         await con.query("delete from report where report_id = :r_id",
@@ -505,7 +507,7 @@ app.get("/show-admin/shift-edit",(req,res) => {
         let [cast_res] = await con.query(ENT_SQL);
         let [day_and_time] = await con.query("select day_and_time from Time_Table where tt_id = :tt_id"
             ,{tt_id:parseInt(req.query.tt_id)})
-        let [shift_res] = await con.query("select roll.roll_id,entertainer.entertainer_id \
+        let [shift_res] = await con.query("select shift.id,roll.roll_id,entertainer.entertainer_id \
         from shift join entertainer using(entertainer_id) \
         join roll using(roll_id) \
         join entertainment_show as ES on ES.show_id = shift.show_id \
@@ -523,12 +525,25 @@ app.get("/show-admin/shift-edit",(req,res) => {
             rolls:roll_res,roll_cast:roll_cast_res,all_cast:cast_res,tt:tt_res
             ,shift:render_shift,td:day_and_time});
     }
+    shift_edit();
 })
 
 //公開済みシフト編集POST
 app.post("/show-admin/shift-edit",(req,res) => {
     let change_shift = async() => {
+        let [tt_id] = await con.query("select tt_id from Time_table where day_and_time = :dt",
+            {dt:req.body.time}
+        )
+        delete req.body.time;
         //シフトテーブルの中身UPDATE
+        for(let key in req.body){
+            let [update_res] = await con.query("update shift set entertainer_id = :ent_id \
+                where tt_id = :t_id && roll_id = :r_id && show_id = :s_id;",
+                {ent_id:parseInt(req.body[key]),r_id:parseInt(key),t_id:tt_id[0].tt_id,s_id:parseInt(req.body.show_id)}
+            );
+        }
+        //render
+        res.sendFile("")
     }
 
     //編集確定
