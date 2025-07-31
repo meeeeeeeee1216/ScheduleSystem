@@ -630,4 +630,26 @@ app.get("/entertainer",(req,res)=>{
     entertainer();
 });
 
+//キャスト名変更（新人１などとして登録した人の名前が判明した場合などに使用）
+app.get("/entertainer/rename",(req,res) => {
+    //ログイン判定（ショー管理アカウントを持っていればすべてのキャストの名称を変更できる）
+    let rename = async() => {
+        let [ent_res] = await con.query("select * from entertainer where entertainer_id > 2;");
+        res.render("rename_entertainer.ejs",{all_cast:ent_res})
+    }
+    rename()
+})
+
+//キャスト名変更受け取り
+app.post("/entertainer/rename",(req,res) => {
+    let rename = async() => {
+        await con.query("update entertainer set entertainer_name = :name \
+                where entertianer_id = :id;",
+                {id:parseInt(req.body.before_name),name:req.body.after_name});
+        res.render("")
+    }
+    rename();
+
+});
+
 

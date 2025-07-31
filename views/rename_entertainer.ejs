@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>ショーシフト管理システム</title>
+    </head>
+    <body>
+        
+        <script src = "../public/js/make_header.js" type="text/javascript"></script>
+        <main>
+            <div class="title">
+                <h2>キャスト名　編集</h2>
+                <p>ほかのショーも含め同一名でのキャスト登録ができません。同姓同名キャストが複数存在する場合は表記を分けて登録してください。</p>
+                <p>同一名キャストの競合を避けるため、可能な限りSNSのアカウント名など正確な活動名で登録することを推奨します。</p>
+                <p>複数の呼称が存在するキャストについては（）などを用いてすべての表記を記載してください</p>
+                <p>名前が判明していない場合はショー名を入れるなど競合を避けるよう工夫してください。（例：パレード2025_新人Ａなど）</p>
+            </div>
+            <form action="http://localhost:3000/entertainer/rename" method="post" name="form">
+                <div id="announce-title">
+                    <p>元のキャスト名</p>
+                    <select name="before_name" id="all-cast">
+                        <% all_cast.forEach(cast => { %>
+                            <option value=<%= cast.entertainer_id %> > <%= cast.entertainer_name %>
+                        <% }); %>
+                    </select>
+                </div>
+                <div id="content">
+                    <p>変更後の名前：</p>
+                    <input type="text" name="after_name" id="after-name">
+                <button name="send" type="submit" onClick="check_name()">変更</button>
+                <script type="text/javascript">
+                    function check_name(){
+                        let after = document.getElementById("after-name");
+                        let all_cast = document.getElementById("all-cast");
+
+                        all_cast.forEach(cast => {
+                            if(after.value == cast.value){
+                                alart("この名前は既に登録されています")
+                            }
+                        });
+                    }
+                </script>
+            </form>
+        </main>
+   </body>
+</html>
