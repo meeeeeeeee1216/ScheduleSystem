@@ -1,6 +1,5 @@
-//　報告受け取り表示確認までOK
-//　編集・承認先GET化
-//　削除GET化
+
+//報告公開・編集画面にTYPEを反映するところから
 
 //モジュール
 const express = require("express");
@@ -310,21 +309,23 @@ app.get("/show-admin",(req,res) => {
 })
 
 //各ショー管理画面の報告削除
-//http://localhost:3000/show-admin/delete-notice
-app.post("/show-admin/delete-notice",(req,res) =>{
+//http://localhost:3000/show-admin/delete-notice?notice_id=
+app.get("/show-admin/delete-notice",(req,res) =>{
     //req.body.notice_idの報告を削除する
     let delete_notice = async() => {
-        if(req.body.report_id != null){
+        let [report_id] = await con.query("select report_id from report where notice_id = :id",
+            {id:parseInt(req.query.notice_id)}
+        )
+        await con.query("delete from notice where notice_id = :n_id",
+            {n_id: parseInt(req.body.notice_id)});
+
+        if(report_id[0].report_id != 1){
             await con.query("delete from report where report_id = :r_id",
                 {r_id: parseInt(req.body.report_id)});
         }
         await con.query("delete from notice where notice_id = :n_id",
             {n_id: parseInt(req.body.notice_id)});
         
-        await con.commit(function(err){
-            if(err) throw err;
-            con.rollback()
-        })
     }
     delete_notice();
     //ショー管理ページにリダイレクトする
@@ -333,7 +334,7 @@ app.post("/show-admin/delete-notice",(req,res) =>{
 });
 
 //報告詳細確認画面
-// http://localhost:3000/show-admin/report-detail?show_id= & report_id = 
+// http://localhost:3000/show-admin/report-detail?show_id=2&report_id=2 
 app.get("/show-admin/report-detail",(req,res) => {
     let report_detail = async() => {
         let [show_name] = await con.query(SHOW_NAME_SQL,{s_id: parseInt(req.query.show_id)});
@@ -346,8 +347,8 @@ app.get("/show-admin/report-detail",(req,res) => {
          res.render("shift_report_edit.ejs",
                 {title:"シフト報告の編集・公開",show_id:req.query.show_id,show_name:show_name[0].show_name,
                 rolls:roll_res,roll_cast:roll_cast_res,all_cast:cast_res,tt:tt_res
-                ,shift:JSON.parse(report_res[0].shift),td:report_res[0].time_and_day,
-                report_id:report_res[0].report_id});
+                ,shift:report_res[0].shift,td:report_res[0].day_and_time,
+                report_id:report_res[0].report_id,notice_id:req.query.notice_id});
     }
     report_detail()
 });
@@ -362,6 +363,7 @@ app.get("/show-admin/report-detail",(req,res) => {
 // http://localhost:3000/show-admin/report-detail
 app.post("/show-admin/report-detail",(req,res) => {
     let insert_shift = async() => {
+        console.log(req.body)
         //シフト内容DBへ登録
         //req.body -> {time:時間,"roll_id":"entertainer_id" ...}
         //TTを登録

@@ -33,7 +33,7 @@
                         </thead>
                         <tbody>
                             <% notices.forEach(notice => { %>
-                                <tr id="test">
+                                <tr id="test" bgcolor="gray">
                                     <td><%= notice.notice_id %></td>
                                     <td><%= notice.type_of_message %></td>
                                     <td><%= notice.day_and_time.toLocaleString()%></td>
@@ -41,9 +41,8 @@
                                     <td><button id=<%= "open" + notice.notice_id %> onClick="show_detail(this)"> 詳細表示</td>
                                 </tr>
                                 <tr id= <%= "shift-detail-" + notice.notice_id %> style="display : none;">
-                                    <td></td>
-                                    <td>シフト</td>
-                                    <td>
+                                    <td><b>シフト</b></td>
+                                    <td colspan="3">
                                         <% console.log(rolls) %>
                                         <% if(notice.report_id != 1){ %>
                                             <% for(var roll in notice.shift){ %>
@@ -59,17 +58,16 @@
                                                 <% }); %>
                                             <% } %>
                                         <% } %>
-                                        
                                     </td>
                                 </tr>
                                 <tr id= <%= "other-detail-" + notice.notice_id %> style="display : none;">
-                                    <td></td>
-                                    <td>そのほか入力</td>
-                                    <td>
+                                    <td><b>そのほか入力</b></td>
+                                    <td colspan="3">
                                         <%= notice.content %>
                                     </td>
                                 </tr>
                                 <tr id = <%= "operate-" + notice.notice_id %> style="display : none;">
+                                    <td><b>各種操作</b></td>
                                     <% if(show_id != 1){ %>
                                         <td><a href =
                                             <%= "location.href='http://localhost:3000/show-admin/report-detail?show_id=" + show_id + "&report_id=" + notice.report_id +  "'"%> >
@@ -80,7 +78,7 @@
                                     <% } %>
 
                                     <td><a href =
-                                            <%= "location.href='http://localhost:3000/show-admin/delete-notice?show_id=" + show_id + "&notice_id=" + notice.notice_id + "&report_id=" + notice.reoprt_id + "'"%> >
+                                            <%= "location.href='http://localhost:3000/show-admin/delete-notice?notice_id=" + notice.notice_id + "'"%> >
                                             削除（復元不可） </a></td>
                                     <td><button id=<%= "close-" + notice.notice_id %> onClick="close_detail(this)"> 閉じる</td>
                                 </tr>

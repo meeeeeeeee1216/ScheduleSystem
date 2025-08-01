@@ -12,19 +12,30 @@
                 <h2><%=title%></h2>
             </div>
             <!-- 最終登録用POST -->
-            <% if(title="公開済みシフトの編集"){
-                let post_to="http://localhost:3000/show-admin/shift-edit"
-            }else{
-                let post_to = "http://localhost:3000/show-admin/report-detail"
-            }%>
-            <form action=<%= post_to %> method="post" name="form">
+            <% if(title=="公開済みシフトの編集"){ %>
+                <form action="http://localhost:3000/show-admin/shift-edit" method="post" name="form">
+            <% }else{ %>
+                <form action="http://localhost:3000/show-admin/report-detail" method="post" name="form">
+            <% } %>
                 <div id="info">
                     <!-- 確認用隠しフォーム -->
-                    <input type="text" name="show_id" value = <%= show_id %> require>
+                    <input type="text" name="show_id" value = <%= show_id %> require style="display: none;">
                     <% if(title != "公開済みシフトの編集"){ %>
-                        <input type="text" name="report_id" value = <%= report_id %> require>
+                        <input type="text" name="report_id" value = <%= report_id %> require style="display: none;">
                     <% } %>
                     <p>＜ショー日時＞</p>
+                    <% 
+                        const options = {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false // 24時間表記に
+                    };
+                    td = new Intl.DateTimeFormat('ja-JP', options).format(td);
+                    td = td.replace(" ","T").replace("/","-").replace("/","-");%>
                     <input type="datetime-local" name="time" id = "input_tt" value=<%= td %> require>
                     <!-- チェック用非表示TTリスト -->
                     <select id = "tt" style="display: none;">
@@ -90,7 +101,7 @@
                         <br>
                     <% }); %>
                 </div>
-                <input type="checkbox" id="check-confirm" name="check-confirm">
+                <input type="checkbox" id="check-confirm" name="check-confirm" style="display: none;">
                 <button name="send" type="submit" onSubmit="check_confirm(this)">確定して公開</button>
                 <% if(title != "公開済みシフトの編集"){ %>
                     <p>確定すると報告された情報は削除されます</p>
