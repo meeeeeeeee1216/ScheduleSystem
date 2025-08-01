@@ -10,55 +10,118 @@
         <main>
             <div class="title">
                 <h2><%= show_name %> シフト報告</h2>
+                <p>管理者が確認し次第、順次公開・編集されます</p>
             </div>
             <form action=<%= "http://localhost:3000/show-report/end" %> 
                 method="post" name="form">
                 <div id="info">
-                    <p>＜ショー日時＞（修正依頼の場合も対象となるショーの日時を選択してください）</p>
-                    <input type="datetime-local" name="time" require>
+                    <h3>＜ショー日時＞</h3>
+                    <p>（修正依頼の場合も対象となるショーの日時を選択してください）</p>
+                    <input type="datetime-local" name="time" required>
                 </div>
+                
+                <p>すでに公開されているシフトに対して変更の依頼がある場合は対象のショー日時を入力の上
+                    ページ下部のフォームへ手入力でご報告ください</p>
+                <!-- {time:td,roll_id + "-status" : "normal" or "debut" or "new_cast", roll_id:ent_id,} -->
                 <div id="shift">
-                    <p>＜キャスト名報告＞</p>
-                    <% rolls.forEach(element => { %>
-                        <p style="display:inline-block"> <%= element.roll_name %></p>
-                        <!-- 誰だかわからない（規定値） -->
-                        <input type="radio" name = <%= element.roll_id %> value = "1" checked="true"> キャスト不明
-                        <!-- ポジ欠 -->
-                        <input type="radio" name = <%= element.roll_id %> value = "2"> ポジション欠員
-                        <% for(var i=0;i < roll_cast.length;i++){%>
-                            <% if(element.roll_name == roll_cast[i].roll_name) {%>
-                                <input type="radio" name = <%= element.roll_id %> 
-                                value = <%= roll_cast[i].entertainer_id %>>
-                                 <%= roll_cast[i].entertainer_name %>
-                        <% }};%>
-                        <input type="radio" name = <%= element.roll_id %> value = "debut">デビュー
-                        <select name=<%= "debut" + element.roll_id %>>
-                            <% all_cast.forEach(cast => { %>
-                                <% for(var i=0;i < roll_cast.length;i++){%>
-                                    <% if(element.roll_name == roll_cast[i].roll_name && roll_cast[i].roll_id == cast.entertainer_id){ %>
-
-                                    <% }else{ %>
-                                        <option value= <%= cast.entertainer_id %> > 
-                                            <%= cast.entertainer_name %>
-                                        </option>
-                                    <% }} %>
-                            <% }); %>
-                        </select>
-                        <input type="radio" name = <%= element.roll_id %> value = "debut_new">未登録キャスト（選択肢の中にない）
-                        <input type="text" name= <%= "debut_new" + element.roll_id %> >
-                        <br>
-                    <% });%>
+                    <h3>＜キャスト名報告＞</h3>
+                    <table border="1">
+                        <script type="text/javascript">
+                            function check_status(e){
+                                let roll_id = e.name.split("_")[0];
+                                let types = [document.getElementById(roll_id + "-type-1"),
+                                    document.getElementById(roll_id + "-type-2"),
+                                    document.getElementById(roll_id + "-type-3")
+                                ]
+                                //全部のチェックを外す
+                                types.forEach(type => {
+                                    if(type.style.display == "contents"){
+                                        type.style.display = "none";
+                                    }
+                                })
+                                types[parseInt(e.value) -1].style.display = "contents";
+                            }
+                        </script>
+                        <thead>
+                            <tr>
+                                <th>役名</th>
+                                <th>報告種別（一つ選択してください）</th>
+                                <th>詳細</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% rolls.forEach(element => { %>
+                            <tr>
+                                <td><p> <%= element.roll_name %></p></td>
+                                <td>
+                                    <input type="radio" name = <%= element.roll_id + "_type" %> checked value = "1" onClick="check_status(this)"> 
+                                    通常報告（欠員・不明もこちら）<br>
+                                    <input type="radio" name = <%= element.roll_id + "_type" %>  value = "2" onClick="check_status(this)">
+                                     デビュー<br>
+                                    <input type="radio" name = <%= element.roll_id + "_type" %>  value = "3" onClick="check_status(this)"> 
+                                    未登録キャスト（選択肢の中にない）<br>
+                                </td>
+                                <td id="detail">
+                                    <div id=<%= element.roll_id + "-type-1" %> style="display: contents;">
+                                        <!-- 誰だかわからない（規定値） -->
+                                        <input type="radio" name = <%= element.roll_id %>  value = "1"> キャスト不明<br>
+                                        <!-- ポジ欠 -->
+                                        <input type="radio" name = <%= element.roll_id %> value = "2"> ポジション欠員<br>
+                                        <% for(var i=0;i < roll_cast.length;i++){%>
+                                            <% if(element.roll_name == roll_cast[i].roll_name) {%>
+                                                <input type="radio" name = <%= element.roll_id %> 
+                                                value = <%= roll_cast[i].entertainer_id %> checked>
+                                                <%= roll_cast[i].entertainer_name %> <br>
+                                        <% }};%>
+                                    </div>
+                                    <div id=<%= element.roll_id + "-type-2" %> style="display: none;">
+                                        <p>デビュー</p>
+                                        <select name=<%= element.roll_id %>>
+                                            <option> ===選択してください=== </option> 
+                                            <% all_cast.forEach(cast => { %>
+                                                <% if(cast.entertainer_id > 2){ %>
+                                                    <% let flag = false; %>
+                                                    <% for(var i=0;i < roll_cast.length;i++){%>
+                                                        <% if(element.roll_name == roll_cast[i].roll_name && roll_cast[i].entertainer_id == cast.entertainer_id){ %>
+                                                            <% flag = true; %>
+                                                        <% } %>
+                                                    <% } %>
+                                                    <% if(flag == false){ %>
+                                                        <option value= <%= cast.entertainer_id %> > 
+                                                            <%= cast.entertainer_name %>
+                                                        </option>
+                                                    <%}%>
+                                                <% } %>
+                                            <% }); %>
+                                    </select>
+                                    </div>
+                                    <div id=<%= element.roll_id + "-type-3" %> style="display: none;">
+                                        <p>未登録キャスト（デビューの選択肢の中にない）</p>
+                                        <input type="text" name= <%= element.roll_id %> value="入力してください">
+                                    </div>
+                                    <br>
+                                   
+                                    <br>
+                                </td>
+                            </tr>
+                            <% });%>
+                        </tbody>
+                        
+                    </table>
+                    
                 </div>
                 <div id="other">
-                    <p>その他（情報訂正、デビューキャスト、新ポジション報告など）</p>
-                    <input type="radio" name="other_type" value = "only_shift" checked="true"> 
-                    その他なし、シフト報告のみ<br>
+                    <h3>＜その他（情報訂正、デビューキャスト、新ポジション報告など）＞</h3>
+                    <p>・報告種別を選択</p>
+                    <input type="radio" name="other_type" value = "only_shift" checked> シフト報告のみ<br>
                     <input type="radio" name="other_type" value = "correction"> シフト情報修正依頼<br>
                     <input type="radio" name="other_type" value = "debut"> 新人キャストに関する情報提供<br>
                     <input type="radio" name="other_type" value = "new_position"> 新ポジション報告<br>
                     <input type="radio" name="other_type" value = "irregular_info"> 演出変更の情報提供<br>
                     <br>
-                    <textarea name="other" rows="8" cols="50"></textarea>
+                    <textarea name="other" rows="8" cols="50"></textarea><br>
+                    <input type="checkbox" name="only_other">シフト報告なし、情報提供のみの場合はこちらにチェック<br>
+                    <br>
                 </div>
                 <!-- POST処理用show_id隠しフォーム -->
                 <input type="text" name = "show_id" style="display: none;" value = <%= show_id %> requierd>

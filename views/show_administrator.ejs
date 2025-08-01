@@ -14,14 +14,14 @@
             </div>
             <div>
                 <% if(show_id != 1){ %>
-                    <p><a href= <%= "http://localhost:3000/show/" + show_id %>> 公開ページはこちらから</a></p>
+                    <p><a href= <%= "http://localhost:3000/show-home?show_id=" + show_id %>> 公開ページはこちらから</a></p>
                 <% } %>
             </div>
             <div class="main">
                 <div id="report">
                     <h3>報告一覧</h3>
                     <!-- 【半分画面遷移】承認と修正ができる、表形式で出せるとよい、その他で入力されたものもここに表示 -->
-                    <table id="notice-list">
+                    <table id="notice-list" border="1">
                         <thead>
                             <!-- ショーの日時と種類だけ表示 -->
                             <tr>
@@ -32,61 +32,71 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <% notices.forEach(element => { %>
-                                <tr>
-                                    <td><%= element.notice_id %></td>
-                                    <td><%= element.type_of_message %></td>
-                                    <td><%= element.time_and_day %></td>
-                                    <td><button id=<%= "open" + element.notice_id %> onClick="show_detail(this)"> 詳細表示</td>
+                            <% notices.forEach(notice => { %>
+                                <tr id="test">
+                                    <td><%= notice.notice_id %></td>
+                                    <td><%= notice.type_of_message %></td>
+                                    <td><%= notice.day_and_time.toLocaleString()%></td>
+                                </th>
+                                    <td><button id=<%= "open" + notice.notice_id %> onClick="show_detail(this)"> 詳細表示</td>
                                 </tr>
-                                <tr id= <% "shift-detail-" + element.notice_id %> style="display : none;">
+                                <tr id= <%= "shift-detail-" + notice.notice_id %> style="display : none;">
+                                    <td></td>
                                     <td>シフト</td>
                                     <td>
-                                        <% element.shift = JSON.parse(element.shift);%>
-                                        <% for(var roll in element.shift){ %>
-                                            <%= roll %> : <%= element.shift[roll] %> <br>
+                                        <% console.log(rolls) %>
+                                        <% if(notice.report_id != 1){ %>
+                                            <% for(var roll in notice.shift){ %>
+                                                <% console.log(rolls) %>
+                                                <% rolls.forEach(rs => { %>
+                                                    <% if(parseInt(roll) == rs.roll_id){ %>
+                                                        <% all_cast.forEach(ac => { %>
+                                                            <% if(parseInt(notice.shift[roll]) == ac.entertainer_id){ %>
+                                                                <%= rs.roll_name %> : <%= ac.entertainer_name %> <br>
+                                                            <% } %>
+                                                        <% }); %>
+                                                    <% } %>
+                                                <% }); %>
+                                            <% } %>
                                         <% } %>
+                                        
                                     </td>
                                 </tr>
-                                <tr id= <% "other-detail-" + element.notice_id %> style="display : none;">
+                                <tr id= <%= "other-detail-" + notice.notice_id %> style="display : none;">
+                                    <td></td>
                                     <td>そのほか入力</td>
                                     <td>
-                                        <%= element.content %>
+                                        <%= notice.content %>
                                     </td>
                                 </tr>
-                                <tr id = <%= "operate-" + element.notice_id %> style="display : none;">
+                                <tr id = <%= "operate-" + notice.notice_id %> style="display : none;">
                                     <% if(show_id != 1){ %>
                                         <td><a href =
-                                            <%= "location.href='http://localhost:3000/show-admin/report-detail?show_id=" + show.show_id + "&report_id=" + element.report_id +  "'"%> >
+                                            <%= "location.href='http://localhost:3000/show-admin/report-detail?show_id=" + show_id + "&report_id=" + notice.report_id +  "'"%> >
                                             報告編集・公開 </a></td>
                                     <% }else{ %>
-                                        <td><form action= <%= "http://localhost:3000/accept-request?notice_id = " + element.notice_id %> method="get">
+                                        <td><form action= <%= "http://localhost:3000/accept-request?notice_id=" + notice.notice_id %> method="get">
                                                 <button type="submit">申請承認</td>
                                     <% } %>
 
-                                    <form name="delete-notice" 
-                                    action="http://localhost:3000/show-admin/delete-notice" method="post">
-                                        <input type="text" name="notice_id" maxlength="20" value = <%= element.notice_id %> 
-                                        style="display:none;" requierd>
-                                        <input type="text" name="report_id" maxlength="20" value = <%= element.report_id %> 
-                                        style="display:none;" requierd>
-                                        <input type="text" name="show_id" maxlength="20" value = <%= show_id %> 
-                                        style="display:none;" requierd>
-                                        <td><button name="delete" type="submit" sytle="background-color : red">削除（復元不可）</button></td>
-                                    </form>
-                                    <td><button id=<%= "close-" + element.notice_id %> onClick="close_detail(this)"> 閉じる</td>
+                                    <td><a href =
+                                            <%= "location.href='http://localhost:3000/show-admin/delete-notice?show_id=" + show_id + "&notice_id=" + notice.notice_id + "&report_id=" + notice.reoprt_id + "'"%> >
+                                            削除（復元不可） </a></td>
+                                    <td><button id=<%= "close-" + notice.notice_id %> onClick="close_detail(this)"> 閉じる</td>
                                 </tr>
                             <% }); %>
                             <!-- 詳細表示 -->
                             <script type="text/javascript">
                                 function show_detail(ele){
-                                    let id = this.id.slice(4);
-                                    document.getElementById("shift-detail-" + id).style.display = "contents";
-                                    document.getElementById("other-detail-" + id).style.display = "contents";
-                                    document.getElementById("operate-" + id).style.display = "contents";
+                                    console.log(document.getElementById("test").style.display)
+                                    let id = ele.id.slice(4);
+                                    document.getElementById("shift-detail-" + id).style.display = "";
+                                    document.getElementById("other-detail-" + id).style.display = "";
+                                    document.getElementById("operate-" + id).style.display = "";
                                 };
                                 function close_detail(ele){
-                                    let id = this.id.slice(5);
+                                    let id = ele.id.slice(6);
+                                    console.log(id)
                                     document.getElementById("shift-detail-" + id).style.display = "none";
                                     document.getElementById("other-detail-" + id).style.display = "none";
                                     document.getElementById("operate-" + id).style.display = "none";

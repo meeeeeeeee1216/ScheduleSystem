@@ -40,10 +40,10 @@
                 <ul>
                     <% for(let i = 0; i < list.length; i++){
                         if(kind_org === "/show-home"){
-                            var link = 'http://localhost:3000' + kind_org + '?show_id=' + list[i].show_id;
+                            var link = 'http://localhost:3000/show?show_id=' + list[i].show_id;
                             var name = list[i].show_name
                         }else if(kind_org === "/entertainer-home"){
-                            var link = 'http://localhost:3000' + kind_org + '?entertainer_id=' + list[i].entertainer_id;
+                            var link = 'http://localhost:3000/entertainer?entertainer_id=' + list[i].entertainer_id;
                             var name = list[i].entertainer_name
                         }else if(kind_org === "/administrator-home"){
                             var link = 'http://localhost:3000/show-admin?show_id=' + list[i].show_id;

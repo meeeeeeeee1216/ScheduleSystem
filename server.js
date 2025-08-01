@@ -1,3 +1,7 @@
+//　報告受け取り表示確認までOK
+//　編集・承認先GET化
+//　削除GET化
+
 //モジュール
 const express = require("express");
 const app = express();
@@ -48,36 +52,34 @@ app.get('/home',(req,res) => {
 //管理アカウント申請
 app.get("/sign-up",(req,res) => {
     res.sendFile(__dirname + "/public/html/signup.html");
-    //確認画面
-    app.post("/sign-up/check",function(req,res){
-        var form = req.body;
-        res.render("signup-check.ejs", form);
-    });
+});
 
-    //完了画面
-    app.post("/sign-up/end",function(req,res){
-        let signup = async() => {
-            let content = "{account_id:" + req.body.account_id 
-            ",PW:" + req.body.PW
-            ",sns_id:" + req.body.SNS_id
-            ",sns:" + req.body.SNS + 
-            ",mail:" + req.body.mail + "}"
+//アカウント申請確認画面
+app.post("/sign-up/check",function(req,res){
+    var form = req.body;
+    res.render("signup-check.ejs", form);
+});
 
-            let content = JSON.stringify(req.body);
-            //サーバアカウントに申請通知を出す
-            await con.query(
-                'INSERT INTO notice (show_id,type_of_message,content) values (1,"アカウント申請",:content)',
-                {content:content}
-            )
-            await con.commit(function(err){
-                if(err) throw err;
-                con.rollback()
-            })
-        }
-        signup();
-        //完了画面の表示
-        res.sendFile(__dirname + "/public/html/signup-end.html");
-    });
+//完了画面
+app.post("/sign-up/end",function(req,res){
+    async () => {
+        // let content = "{account_id:" + req.body.account_id 
+        // ",PW:" + req.body.PW
+        // ",sns_id:" + req.body.SNS_id
+        // ",sns:" + req.body.SNS + 
+        // ",mail:" + req.body.mail + "}"
+
+        let content = JSON.stringify(req.body);
+        //サーバアカウントに申請通知を出す
+        await con.query(
+            'INSERT INTO notice (show_id,type_of_message,content) values (1,"アカウント申請",:content)',
+            {content:content}
+        );
+        let [insert_res] = con.query("select * from notice;");
+        console.log(insert_res);
+    }
+    //完了画面の表示
+    res.sendFile(__dirname + "/public/html/signup-end.html");
 });
 
 //アカウント承認（serverアカウントのショー管理画面から承認GET）
@@ -114,7 +116,7 @@ app.get("/sign-in",(req,res) => {
 //ログイン→管理画面へ遷移
 app.post("/administrator-home",function(req,res){
     //アカウント照合
-    let sign_in = async() => {
+    async() => {
         let [db_res] = await con.query("select count(*) from account where account_id = ? and PW = ?;"
             ,[req.body.account_id,req.body.PW]);
         console.log(db_res[0]["count(*)"]);
@@ -136,7 +138,6 @@ app.post("/administrator-home",function(req,res){
             }
         }
     };
-    sign_in(con);  
 });
 
 //管理画面ホーム
@@ -159,6 +160,7 @@ app.get("/show-admin/request-new",(req,res) => {
     res.render("new_show_request.ejs")
 });
 
+//新ショー作成申請POST
 app.post("/show-admin/request-new",(req,res) => {
     async() => {
         let content = JSON.stringify(req.body);
@@ -185,12 +187,17 @@ const TT_SQL = "select day_and_time from time_table where show_id = :s_id;"
 const ENT_SQL = "select * from entertainer;"
 //noticeからそのショーのnoticeとreportの一覧を持ってくる
 const NOTI_SQL = "select N.notice_id,N.type_of_message,N.content,\
-        N.time_and_day,R.shift,R.report_id \
+        N.day_and_time,R.shift,R.report_id \
         from notice as N join report as R using(report_id) where N.show_id = :s_id;"
 //noticeからreportのデータを持ってくる
-const REPORT_SQL =  "select N.notice_id,N.time_and_day,R.shift,R.report_id \
+const REPORT_SQL =  "select N.notice_id,N.day_and_time,R.shift,R.report_id \
         from notice as N join report as R using(report_id) \
         where R.report_id = :r_id;"
+
+//notice一覧
+// const NOTI_SQL = "select * from notice where show_id = :s_id;"
+const NOTI_REPORT_SQL = "select N.notice_id,N.day_and_time,R.shift,R.type_of_report\
+ from notice where show_id = :s_id;"
 
 
 //=============================================================================================
@@ -198,7 +205,8 @@ const REPORT_SQL =  "select N.notice_id,N.time_and_day,R.shift,R.report_id \
 //ショー一覧画面
 app.get("/show-home",(req,res) => {
     let show_home = async() => {
-        let [db_res] = await con.query("select show_id,show_name from entertainment_show;")
+        let [db_res] = await con.query("select show_id,show_name from entertainment_show \
+            where show_id > 1;")
         res.render("list.ejs",{list: db_res,kind_org:req.originalUrl});
     }
     show_home()
@@ -219,7 +227,7 @@ app.get("/show",(req,res) => {
     show();
 });
 
-//各ショー報告画面（http://localhost:3000/show-report?show_id=）
+//各ショー報告画面（http://localhost:3000/show-report?show_id=2）
 app.get("/show-report",(req,res) => {
     let show_report = async() => {
         let [show_name] = await con.query(SHOW_NAME_SQL,{s_id: parseInt(req.query.show_id)});
@@ -235,37 +243,47 @@ app.get("/show-report",(req,res) => {
 
 //報告受け取り(http://localhost:3000/show-report/end , post)
 app.post("/show-report/end",(req,res) => {
+    console.log(req.body);
     //報告種別、ショーの日時、手入力欄を削除してreq.bodyにシフト情報だけ残す
+    //t -> "yyyy/mm/dd tt:mm:ss"
     var t = req.body.time;
-    var type = req.body.other_type
+    delete req.body.time;
+    t = t.toLocaleString();
+    
     var other_content = null;
     var show_id = parseInt(req.body["show_id"]);
-    if(type != "only_shift"){
+    if(req.body.other_type != "only_shift"){
         other_content = req.body.other_content;
     }
-    delete req.body.time,req.body.other_type,req.body.other_content
-    //req.body => {roll_id:ent_id}
 
     //DBに登録
     let insert_report = async() =>{
-        var report_id = null;
+        let report_id = 1;
         //シフトの報告がある（shiftに入れる)
-        if(req.body != {}){
-            let [r_res] = await con.query('insert into report \
-                (shift,time_and_day,show_id) value (:shift,:time,:s_id);',
-                {shift:req.body,time:t,s_id:show_id});
-            report_id = r_res.insertID;
+        if("only_other" in req.body == false){
+            //shift -> {roll_id : ent_id or debut_cast_name}
+            //types -> {roll_id : type_id}
+            let types = {};
+            let shift = {};
+            for(let key in req.body){
+                if(key.split("_")[1] == "type" && key.split("_")[0] != "other"){
+                    types[key.split("_")[0]] = req.body[key];
+                    shift[key.split("_")[0]] = req.body[key.split("_")[0]][parseInt(req.body[key]) -1]
+                }
+            }
+            // console.log(shift)
+            // console.log(types)
+            await con.query('insert into report \
+                (shift,type_of_report) value (:shift,:type);',
+                {shift:JSON.stringify(shift),type:JSON.stringify(types)});
+            let [r_res] = await con.query("select last_insert_id();")
+            report_id = r_res[0]["last_insert_id()"];
         }
         //noticeに入れる
         let [n_res] = await con.query("insert into notice \
-            (show_id,type_of_message,content,report_id) value \
-            (:s_id,:type,:cont,:r_id);",
-        {s_id:show_id, type: type, cont: other_content,r_id :report_id})
-
-        await con.commit(function(err){
-            if(err) throw err;
-            con.rollback()
-        })
+            (show_id,type_of_message,content,report_id,day_and_time) value \
+            (:s_id,:type,:cont,:r_id,:time);",
+        {s_id:show_id, type: req.body.other_type, cont: other_content,time:t,r_id :report_id})
     }
     insert_report();
     res.sendFile(__dirname + "/public/html/shift_report_end.html")
@@ -275,20 +293,23 @@ app.post("/show-report/end",(req,res) => {
 //各ショー管理側
 
 //各ショーページ管理画面ホーム(表向きには削除はここでできる)
-//http://localhost:3000/show-admin?show_id=
+//http://localhost:3000/show-admin?show_id=2
 app.get("/show-admin",(req,res) => {
     let show_admin = async() => {
         let [show_name] = await con.query(SHOW_NAME_SQL,{s_id:parseInt(req.query.show_id)})
         let [noti_res] = await con.query(NOTI_SQL,{s_id:parseInt(req.query.show_id)})
+        let [roll_res] = await con.query(ROLL_SQL,{s_id:parseInt(req.query.show_id)})
+        let [all_cast_res] = await con.query(ENT_SQL);
+        // console.log(roll_res)
         res.render("show_administrator.ejs"
-            ,{show_name:show_name[0].show_name,show_id:req.query.show_id,
-                notices:noti_res});
+            ,{show_name:show_name[0].show_name,show_id:req.query.show_id,notices:noti_res,
+            all_cast:all_cast_res,rolls:roll_res});
     }
     show_admin();
 
 })
 
-//各ショー管理画面の報告削除用POST
+//各ショー管理画面の報告削除
 //http://localhost:3000/show-admin/delete-notice
 app.post("/show-admin/delete-notice",(req,res) =>{
     //req.body.notice_idの報告を削除する

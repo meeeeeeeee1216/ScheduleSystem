@@ -14,6 +14,8 @@ app.listen(PORT, () => {
     //console.log("connect");
 });
 
+app.use(bodyParser.json());
+
 //DB接続
 const con = mysql.createPool({
     host: "localhost",
@@ -26,6 +28,14 @@ const con = mysql.createPool({
 });
 
 con.query("SET NAMES 'utf8mb4';");
+
+app.get("/",(req,res) => {
+    res.sendFile(__dirname + "/html/test.html");
+});
+
+app.post("/",(req,res) => {
+    console.log(req.body);
+})
 
 
 //できる！

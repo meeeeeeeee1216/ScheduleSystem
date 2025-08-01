@@ -1,4 +1,4 @@
--- DROP DATABASE SSS;
+DROP DATABASE SSS;
 CREATE DATABASE SSS;
 USE SSS;
 SET NAMES 'utf8mb4';
@@ -15,13 +15,13 @@ authority tinyint not null);
 CREATE TABLE SSS.entertainment_show(
 show_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
 show_name VARCHAR(30) NOT NULL,
-administrator_id JSON NOT NULL,
+administrator_id varchar(20) NOT NULL,
 FOREIGN KEY (administrator_id) references account(account_id));
 
 -- CREATE TABLE SSS.co_editor(
 -- show_id INT NOT NULL,
 -- account_id varchar(30) NOT NULL,
--- PRIMARY KEY ( show_id, account_id) ,
+-- PRIMARY KEY (show_id, account_id) ,
 -- FOREIGN KEY (show_id) references entertainment_show(show_id),
 -- FOREIGN KEY (account_id) references account(account_id));
 
@@ -68,10 +68,12 @@ FOREIGN KEY (entertainer_id) references entertainer(entertainer_id),
 FOREIGN KEY (show_id) references entertainment_show(show_id));
 
 -- 報告された情報
--- shift -> {'A役':'〇さん', ...} idにしない
+-- //shift -> {roll_id : ent_id or debut_cast_name}
+-- //types -> {roll_id : type_id}
 CREATE TABLE SSS.report(
     report_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    shift JSON NOT NULL
+    shift JSON NOT NULL,
+    type_of_report JSON
 );
 
 CREATE TABLE SSS.notice(
@@ -80,7 +82,7 @@ CREATE TABLE SSS.notice(
     type_of_message varchar(30) not null,
     content text,
     report_id INT,
-    time_and_day DATETIME,
+    day_and_time DATETIME,
     FOREIGN KEY (show_id) references entertainment_show(show_id),
     FOREIGN KEY (report_id) references report(report_id)
 );
@@ -209,8 +211,9 @@ VALUE
 -- ('C2役',2,NULL),	
 -- ('D2役',2,NULL);
 
--- insert into report (shift,time_and_day,show_id)
--- VALUE
--- ({'A1役':'A','B1役':'B','C1役':'C'},'2025-06-10 10:00:00',)
+--ID：１シフト報告のないnotice用
+insert into report (shift)
+VALUE
+("{}");
 
 
