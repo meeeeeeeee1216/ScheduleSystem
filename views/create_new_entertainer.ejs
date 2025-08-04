@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>ショーシフト管理システム</title>
+    </head>
+    <body>
+        <script src = "public/js/make_header.js" type="text/javascript"></script>
+        <div class="signin-form">
+            <h2>新人キャスト登録</h2>
+            <div class="attention">
+                <h3>＜注意事項＞</h3>
+                <ul>
+                    <li>すべてのショーで共通した名前を使用するため、同一名を使用した登録ができません。</li>
+                    <li>同姓同名キャストが複数存在する場合は表記を分けて登録してください。</li>
+                    <li>競合を避けるため、可能な限りSNSのアカウント名など正確な活動名で登録することを推奨します。</li>
+                    <li>新人キャストやフルネームが分からないなど、競合を避けられない場合はショーの名前を入れるなどの工夫してください。（例：パレード2025_新人Ａなど）</li>
+                </ul>
+            </div>
+            <form action="http://localhost:3000/entertainer/new-ent" method="post" name="form">
+                <p>キャスト名</p>
+                <input type="text" name="name" id="name" maxlength="50" requierd>
+                <select id="all_cast">
+                    <% all_cast.forEach(cast => { %>
+                        <option value=<% cast.entertainer_name %>></option>
+                    <% }) %>
+                </select>
+                <p>備考</p>
+                <textarea name="bio" rows="10" cols="60"></textarea>
+                <button name="send" type="submit" onClick="check_name">送信</button>
+            </form>
+            <script language="javascript" type="text/javascript">
+                function check_name(){
+                    let name = document.getElementById("name");
+                    document.getElementById("all_cast").options.forEach(cast => {
+                        if(name == cast.value){
+                            alart("この名前のキャストはすでに登録されています");
+                            
+                        }
+                    });
+                }
+            </script>
+        </div>
+    </body>
+</html>

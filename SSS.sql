@@ -47,7 +47,8 @@ FOREIGN KEY (show_id) references entertainment_show(show_id));
 
 CREATE TABLE SSS.entertainer(
 entertainer_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-entertainer_name VARCHAR(50) NOT NULL);
+entertainer_name VARCHAR(50) NOT NULL,
+bio text);
 
 CREATE TABLE SSS.out_of_park_schedule(
 out_park_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,

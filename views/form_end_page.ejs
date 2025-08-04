@@ -28,8 +28,32 @@
         }else if(url == "/show-report/end"){
             title = "シフト報告　送信"
             attention = "管理者が報告を確認次第、情報が公開されます。"
-            get_name = "ショーのホーム画面"
+            get_name = "シフトの公開画面"
             get_to = "http://localhost:3000/show?show_id=" + document.getElementById("show_id").value
+        }else if(url == "/show-admin/report-detail"){
+            title = "シフト公開"
+            get_name = "シフトの公開画面"
+            get_to = "http://localhost:3000/show?show_id=" + document.getElementById("show_id").value
+        }else if(url == "/show-admin/create-position"){
+            title = "ポジション登録"
+            get_name = "シフトの公開画面"
+            get_to = "http://localhost:3000/show?show_id=" + document.getElementById("show_id").value
+        }else if(url == "/show-admin/announce"){
+            title = "アナウンス作成"
+            get_name = "シフトの公開画面"
+            get_to = "http://localhost:3000/show?show_id=" + document.getElementById("show_id").value
+        }else if(url == "/show-admin/shift-edit"){
+            title = "シフト編集"
+            get_name = "シフトの公開画面"
+            get_to = "http://localhost:3000/show?show_id=" + document.getElementById("show_id").value
+        }else if(url == "/entertainer/rename"){
+            title = "キャストの名前編集"
+            get_name = "キャストのホーム"
+            get_to = "http://localhost:3000/entertainer?entertainer_id=" + document.getElementById("show_id").value
+        }else if(url == "/entertainer/new-ent"){
+            title = "新人キャスト登録"
+            get_name = "キャストのホーム"
+            get_to = "http://localhost:3000/entertainer?entertainer_id=" + document.getElementById("show_id").value
         }
         %>
 
@@ -38,10 +62,8 @@
         <h2><%= title %> 完了</h2>
         <p><%= attention %></p>
         <p>5秒後に自動で<%= get_name %>に戻ります</p>
-        <%if(url == "/show-report/end"){ %>
-            <form type="text" value=<%= show_id %> id="show_id">
-        <%} %>
-        <form type="text" value=<%= url %> id="url">
+        <form type="text" value=<%= show_id %> id="show_id" style="display: none;">
+        <form type="text" value=<%= url %> id="url" style="display: none;">
         <p>戻らなければ<a href= <%= get_to %>>こちらをクリック</a></p>
     </body>
 </html>

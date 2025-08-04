@@ -381,13 +381,8 @@ app.post("/show-admin/report-detail",(req,res) => {
         await con.query("delete from notice where report_id = :r_id",
             {n_id:parseInt(req.body.report_id)});
 
-        await con.commit(function(err){
-            if(err) throw err;
-            con.rollback()
-        })
-
-        //公開画面へ遷移
-        res.writeHead(302, {'Location': 'http://localhost:3000/show?show_id=' + req.body.show_id});
+        //完了画面表示→ホーム画面へ遷移
+        res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.show_id});;
     }
 
     let insert_ent = async(roll) => {
@@ -406,7 +401,6 @@ app.post("/show-admin/report-detail",(req,res) => {
             return ins_ent.insertId
         }
     }
-
     
     //報告公開
     if(req.body["check-confirm"] == true){ 
@@ -502,10 +496,8 @@ app.post("/show-admin/create-position",(req,res) => {
             value (:tt_id,:r_id,:ent_id,:s_id)",
             {tt_id:tt_id,r_id:ins_roll.insertId,ent_id:ent_id,s_id:parseInt(req.body.show_id)})
         
-        await con.commit(function(err){
-            if(err) throw err;
-            con.rollback()
-        })
+        //完了画面表示→ショーホーム画面へ遷移
+        res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.show_id});
     }
     insert_new_roll();
 });
@@ -523,14 +515,10 @@ app.post("/show-admin/announce",(req,res) => {
         await con.query("insert into announce (d,show_id,title,content) value (:date,:s_id,:title,:content)",
             {s_id:parseInt(req.body.show_id),title:req.body.title,content:req.body.content,date:d}
         );
-        await con.commit(function(err){
-            if(err) throw err;
-            con.rollback()
-        })
     }
     insert_announce();
-    //公開画面へ遷移
-    res.writeHead(302, {'Location': 'http://localhost:3000/show?show_id=' + req.body.show_id});
+    //完了画面表示→ショーホーム画面へ遷移
+    res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.show_id});
 });
 
 //公開済みシフト編集
@@ -580,8 +568,8 @@ app.post("/show-admin/shift-edit",(req,res) => {
                 {ent_id:parseInt(req.body[key]),r_id:parseInt(key),t_id:tt_id[0].tt_id,s_id:parseInt(req.body.show_id)}
             );
         }
-        //render
-        res.sendFile("")
+        //完了画面表示→ショーホーム画面へ遷移
+        res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.show_id});
     }
 
     //編集確定
@@ -684,10 +672,25 @@ app.post("/entertainer/rename",(req,res) => {
         await con.query("update entertainer set entertainer_name = :name \
                 where entertianer_id = :id;",
                 {id:parseInt(req.body.before_name),name:req.body.after_name});
-        res.render("")
     }
     rename();
+    //完了画面表示→enthome画面へ遷移
+    res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.before_name});
 
 });
 
+//新人登録
+app.get("entertainer/new-ent",(req,res) => {
+    let create_new_ent = async() => {
+        [all_cast_res] = await con.query(ENT_SQL);
+        res.render("create_new_entertaier.ejs",{all_cast: all_cast_res});
+    }
+    create_new_ent();
+})
+
+//新人登録POST
+app.post("entertainer/new-ent",(req,res) => {
+    //完了画面表示→enthome画面へ遷移
+    res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.ent_id});
+})
 
