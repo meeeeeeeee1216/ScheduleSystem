@@ -62,12 +62,6 @@ app.post("/sign-up/check",function(req,res){
 //完了画面
 app.post("/sign-up/end",function(req,res){
     async () => {
-        // let content = "{account_id:" + req.body.account_id 
-        // ",PW:" + req.body.PW
-        // ",sns_id:" + req.body.SNS_id
-        // ",sns:" + req.body.SNS + 
-        // ",mail:" + req.body.mail + "}"
-
         let content = JSON.stringify(req.body);
         //サーバアカウントに申請通知を出す
         await con.query(
@@ -78,7 +72,7 @@ app.post("/sign-up/end",function(req,res){
         console.log(insert_res);
     }
     //完了画面の表示
-    res.sendFile(__dirname + "/public/html/signup-end.html");
+    res.render("form_end_page.ejs",{url:req.originalUrl,show_id:null});
 });
 
 //アカウント承認（serverアカウントのショー管理画面から承認GET）
@@ -98,11 +92,10 @@ app.get("/accept-request",(req,res) => {
                 {name:obj["name"]}
             )
         }
-        await con.commit()
         //メール送信
         //https://blog.capilano-fw.com/?p=5673#i
 
-        res.sendFile(__dirname + "/public/html/accept_end.html");
+        res.render("form_end_page.ejs",{url:req.originalUrl,show_id:null});
     }
     accept();
 })
@@ -285,7 +278,7 @@ app.post("/show-report/end",(req,res) => {
         {s_id:show_id, type: req.body.other_type, cont: other_content,time:t,r_id :report_id})
     }
     insert_report();
-    res.sendFile(__dirname + "/public/html/shift_report_end.html")
+    res.render("form_end_page.ejs",{url:req.originalUrl,show_id:show_id});
 })
 
 //=================================================================================================

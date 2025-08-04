@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>ショーシフト管理システム</title>
+        <script type="text/javascript">
+            setTimeout(function(){
+                window.location.href = document.getElementById("trans_page").value
+            }, 5 * 1000);
+        </script>
+    </head>
+    <body>
+        <% let url = document.getElementById("url").value;
+        let title = "";
+        let attention = "";
+        let get_name = "";
+        let get_to = "";
+        if(url == "/sign-up/end"){
+           title = "管理アカウント申請"
+           attention = "登録完了まで今しばらくお待ちください\n完了後、登録メールアドレスに通知が送信されます"
+           get_name = "ホーム画面"
+           get_to = "http://localhost:3000/home"
+        }else if(url == "/accept-request"){
+            title = "管理アカウント承認"
+            attention = "完了後、管理者の登録メールアドレスに通知が送信されます"
+            get_name = "ホーム画面"
+            get_to = "http://localhost:3000/home"
+        }else if(url == "/show-report/end"){
+            title = "シフト報告　送信"
+            attention = "管理者が報告を確認次第、情報が公開されます。"
+            get_name = "ショーのホーム画面"
+            get_to = "http://localhost:3000/show?show_id=" + document.getElementById("show_id").value
+        }
+        %>
+
+
+        <script src = "public/js/make_header.js" type="text/javascript"></script>
+        <h2><%= title %> 完了</h2>
+        <p><%= attention %></p>
+        <p>5秒後に自動で<%= get_name %>に戻ります</p>
+        <%if(url == "/show-report/end"){ %>
+            <form type="text" value=<%= show_id %> id="show_id">
+        <%} %>
+        <form type="text" value=<%= url %> id="url">
+        <p>戻らなければ<a href= <%= get_to %>>こちらをクリック</a></p>
+    </body>
+</html>
