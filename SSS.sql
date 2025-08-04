@@ -4,6 +4,7 @@ USE SSS;
 SET NAMES 'utf8mb4';
 
 -- authorityが1になったら承認（初期値NULL）
+-- アカウントに対して管理できるショーを紐づけるほうが良いのでは？
 CREATE TABLE SSS.account ( 
 account_id varchar(20) not null PRIMARY KEY,
 pw varchar(50) not null,

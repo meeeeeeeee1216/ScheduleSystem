@@ -50,7 +50,10 @@ app.get('/home',(req,res) => {
 //アカウント関係
 //管理アカウント申請
 app.get("/sign-up",(req,res) => {
-    res.sendFile(__dirname + "/public/html/signup.html");
+    let sign_up = async() => {
+        let [ac_res] = await con.query("select * from account");
+        res.render("signup.ejs",{all_account:ac_res});
+    }
 });
 
 //アカウント申請確認画面

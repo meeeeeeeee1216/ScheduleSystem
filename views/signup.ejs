@@ -20,7 +20,12 @@
             <form action="http://localhost:3000/sign-up/check" method="post" name="form">
                 <div id = "id">
                     <p>アカウントID</p>
-                    <input type="text" name="account_id" maxlength="20" requierd>
+                    <input type="text" name="account_id" id="account_id" maxlength="20" requierd>
+                    <select id="all_account">
+                        <% all_account.forEach(account => { %>
+                            <option value=<%= account.account_id %>></option>
+                        <% }) %>
+                    </select>
                 </div>
 
                 <div id="pw">
@@ -41,21 +46,19 @@
                     <p>メールアドレス（登録完了通知、各種報告の通知などをお送りします。）</p>
                     <input type="email" name="mail" requierd>
                 </div>
-                <!-- <button onclick = "location.href='http://localhost:3000/sign-up/check'">確認</button> -->
-                <!-- チェック用 -->
                 <br>
-                <!-- <input type="submit" name="send" onclick="check('signup-check.html')"> -->
-                <button name="send" type="submit">送信</button>
+                <button name="send" type="submit" onClick="check">確認</button>
             </form>
-            <!-- <script language="javascript" type="text/javascript">
-                document.form.send.addEventListener('click',function(){
-                    document.form.submit();
-                })
-                const check = (page) => {
-                    document.form.action = page;
-                    document.form.submit();
-                };
-            </script> -->
+            <script language="javascript" type="text/javascript">
+                function check(){
+                    let id = document.getElementById("id").value;
+                    document.getElementById("all_account").options.forEach(ac => {
+                        if(ac.value == id){
+                            alart("このIDはすでに使用されています")
+                        }
+                    });
+                }
+            </script>
         </div>
     </body>
 </html>
