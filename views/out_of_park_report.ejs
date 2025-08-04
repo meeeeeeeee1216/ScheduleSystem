@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>ショーシフト管理システム</title>
+    </head>
+    <body>
+        
+        <script src = "../public/js/make_header.js" type="text/javascript"></script>
+        <main>
+            <div class="title">
+                <h2>外部日程登録</h2>
+            </div>
+            <form action="http://localhost:3000/entertainer/report" method="post" name="form">
+                <p>キャスト名</p>
+                <select name="ent_id" required>
+                    <% all_cast.forEach(cast => { %>
+                        <option value=<%= cast.entertainer_id %>><%= cast.entertainer_name %> </option>
+                    <% }) %>
+                </select>
+                <p>日付</p>
+                <input type="datetime" name="dt" required>
+                <p>公演内容</p>
+                <input type="radio" name="type" value="play">舞台公演
+                <input type="radio" name="type" value="dance">ダンス公演
+                <input type="radio" name="type" value="event">イベント・撮影会など
+                <input type="radio" name="type" value="other">そのほか
+                <button name="send" type="submit">報告</button>
+            </form>
+            
+        </main>
+   </body>
+</html>

@@ -631,6 +631,23 @@ app.get("/entertainer-home",(req,res) => {
 });
 
 //外部報告
+app.get("/entertainer/report",(req,res) => {
+    let ent_report = async() => {
+        let [all_cast_res] =  await con.query(ENT_SQL);
+        res.render("out_of_park_report.ejs",{all_cast:all_cast})
+    }
+    ent_report();
+});
+
+app.post("/entertainer/report",(req,res) => {
+    let insert_db = async() => {
+        await con.query("insert into out_of_park_schedule \
+            (entertainer_id,out_day,type_of) value (:id,:day,:type)",
+        {id: parseInt(req.body.ent_id), type: req.body.type, day: req.body.dt});
+
+        req.render("form_end_page.ejs",{url:req.originalUrl,show_id:ent_id})
+    }
+})
 
 
 //各演者画面
@@ -660,6 +677,8 @@ app.get("/entertainer",(req,res)=>{
     }
     entertainer();
 });
+
+//以下要ログイン
 
 //キャスト名変更（新人１などとして登録した人の名前が判明した場合などに使用）
 app.get("/entertainer/rename",(req,res) => {

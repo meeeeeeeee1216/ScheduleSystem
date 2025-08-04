@@ -49,12 +49,14 @@ FOREIGN KEY (show_id) references entertainment_show(show_id));
 CREATE TABLE SSS.entertainer(
 entertainer_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
 entertainer_name VARCHAR(50) NOT NULL,
-bio text);
+bio text,
+out_day_schedule JSON);
 
 CREATE TABLE SSS.out_of_park_schedule(
 out_park_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
 entertainer_id INT NOT NULL,
 out_day DATE NOT NULL,
+type_of VARCHR(20) NOT NULL,
 FOREIGN KEY (entertainer_id) references entertainer(entertainer_id));
 
 -- 表示されるシフトの情報だけを入れたい
