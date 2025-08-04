@@ -2,9 +2,13 @@ function render(){
 
   const body = document.getElementsByTagName("tbody");
 
-  const today_Y = now.getFullYear();
-  const today_M = now.getMonth();
+  const shift = document.getElementById("shift").options;
+
+  const today_Y = parseInt(document.getElementById("year"));
+  const today_M = paraseInt(document.getElementById("month")) - 1;
+  //最初の曜日
   const firstday = new Date(today_Y, today_M, 1).getDay();
+  //最後の日付
   const lastdate = new Date(today_Y, today_M + 1, 0).getDate();
 
   const title = document.getElementById("calendar_title");
@@ -29,11 +33,22 @@ function render(){
       var tmp = [];
       rows.push(document.createElement("tr"));
     }
+    let shift_text = ""
+    //シフトを持ってくる
+    shift.forEach(s => {
+      if(dateArray[i] == s.id){
+        shift_text += s.value;
+      }else{
+        break
+      }
+    });
+
     //枠追加
     tmp.push(document.createElement("td"));
     //範囲内だったら文字を入れる
     if(dateArray[i] >= 1 && dateArray[i] <= lastdate){
-        tmp[tmp.length -1].innerText = dateArray[i] + "日" + "\n" + "予定が入る";
+        tmp[tmp.length -1].innerText = dateArray[i] + "日" + "\n" + shift_text;
+        tmp[tmp.length -1].id = toString(dateArray[i]);
     }
     rows[rows.length -1].appendChild(tmp[tmp.length -1]);
     //金曜日にきたら一列tbodyに追加

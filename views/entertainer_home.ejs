@@ -15,6 +15,19 @@
                 <li><a href="http://localhost:3000/administrator">ショー管理（要ログイン）</a></li>
             </ul>
         </aside>
+        <div class="datas" style="display: none;">
+            <select id="shift">
+                <% shift.forEach(s => { %>
+                    <option id= <%= s.day_and_time.getDate() %> 
+                        value = <%= s.day_and_time.getHours() + ":" + s.day_and_time.getMinutes() + "\n"
+                        + s.show_name + "\n" + s.roll_name %> >
+                    </option>
+                <% }); %>
+            </select>
+
+            <input type="text" id = "year" value = <%=y %>>
+            <input type="text" id = "month" value = <%=m %>> 
+        </div>
 
         <main>
             <h2 id="sub-title"><%= name %></h2>
@@ -44,10 +57,11 @@
             </div>
             
         </main>
-        <!-- 基本のカレンダーを作る -->
+        <!-- 基本のカレンダーを作る、〇日のBOXはIDが〇 -->
         <script src="../public/js/make_calendar.js" type="text/javascript"></script>
-        <!-- その月の予定を抽出 -->
         <!-- 日付ごとに描画 -->
+        
+
     </body>
 
 
