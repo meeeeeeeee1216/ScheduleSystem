@@ -1,6 +1,4 @@
 
-//報告公開・編集画面にTYPEを反映するところから
-
 //モジュール
 const express = require("express");
 const app = express();
@@ -9,6 +7,9 @@ const mysql = require("mysql2/promise");
 const path = require("path");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const cookie_parser = require("cookieParser");
 app.set('view engine','ejs')
 
 //ポートを開く
@@ -24,7 +25,6 @@ const con = mysql.createPool({
     database: "SSS",
     connectionLimit: 5,
     namedPlaceholders: true
-    //multipleStatements:true
 });
 
 con.query("SET NAMES 'utf8mb4';");
@@ -37,6 +37,11 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(bodyParser.json());
+
+app.use(cookieParser());
+
+//変数
+const LOGIN_SECRET_KEY = "SECRET_KEY";
 
 //=======================================================================
 
@@ -111,29 +116,63 @@ app.get("/sign-in",(req,res) => {
 //ログイン→管理画面へ遷移
 app.post("/administrator-home",function(req,res){
     //アカウント照合
-    async() => {
-        let [db_res] = await con.query("select count(*) from account where account_id = ? and PW = ?;"
-            ,[req.body.account_id,req.body.PW]);
-        console.log(db_res[0]["count(*)"]);
-        if(db_res[0]["count(*)"] == 0){
-            //ログイン失敗
-            res.writeHead(302, {'Location': 'http://localhost:3000/sign-in?error=1'});
-        }else{
-            //成功
-            //認証トークン生成
-            //Coockieに保存
-            //表示
-            try{ 
-                [db_res] = await con.query(
-                    "select show_id,show_name,administrator_id from entertainment_show where administrator_id = :ad_id;"
-                    ,{ad_id:req.body.account_id});
-                res.render("list.ejs",{list:db_res,kind_org:req.originalUrl});
-            }catch(err){
-                throw err;
+    let login = async() => {
+        try{
+            let [db_res] = await con.query("select * from account where account_id = :id;"
+                ,{id:req.body.account_id});
+            if(db_res.length == 1){
+                //アカウントがある
+                let isPWCorrect = await bcrypt.compare(req.body.PW,db_res[0].PW);
+                if(!isPWCorrect){
+                    throw new Error();
+                }else{
+                    //ログイン成功
+                    //トークン生成
+                    let token = jwt.sign({id:req.body.account_id},LOGIN_SECRET_KEY,{expirsIn:"2h"})
+                    //cookieにかく
+                    res.cookie("token",token,{
+                        httpOnly: true,
+                        secure: true
+                    });
+                    let [db_res] = await con.query("select show_id,show_name,administrator_id \
+                        from entertainment_show;")
+                    res.render("list.ejs",{list: db_res,kind_org:req.originalUrl});
+                } 
+            }else{
+                throw new Error();
             }
+
+        }catch{
+            res.status(401).send("IDかパスワードが間違っています")
         }
     };
+    login();
 });
+
+//ログインチェックをする関数
+function loginCheck(req,res){
+    //req.cookies.token-> {id: account_id}
+    try{
+        //tokenがあるか否か
+        let {token} = req.cookies;
+        if(token == undefined){
+            //ログインしてない
+            throw new Error();
+        }else{
+            //トークンがある(ログインしてる)
+            jwt.verify(token,LOGIN_SECRET_KEY,function(e,d){
+                if(e){
+                    //認証NG
+                    throw e;
+                }else{
+                    req.account_id = d.account_id;
+                }
+            });
+        }
+    }catch{
+        res.status(401).send("再度ログインしてください")
+    }
+}
 
 //管理画面ホーム
 app.get("/administrator-home",(req,res) => {
@@ -145,24 +184,30 @@ app.get("/administrator-home",(req,res) => {
             from entertainment_show;")
         res.render("list.ejs",{list: db_res,kind_org:req.originalUrl});
     }
-    ad_home()
+    //loginCheck(req,res);
+    ad_home();
 });
 
 //新ショー作成申請
 app.get("/show-admin/request-new",(req,res) => {
     //ログイン確認
+    //loginCheck(req,res);
     //IDを送る
+    // res.render("new_show_request.ejs",{account_id:req.account_id})
     res.render("new_show_request.ejs")
 });
 
 //新ショー作成申請POST
 app.post("/show-admin/request-new",(req,res) => {
-    async() => {
+    let request_show = async() => {
         let content = JSON.stringify(req.body);
         await con.query("insert into notice (type_of_message,content,show_id) value ('新ショー申請',:content,1);",
             {content:content}
         )
     }
+    //ログインチェック
+    // loginCheck(req,res)
+    request_show();
 })
 
 //=========================================================================================
@@ -300,6 +345,8 @@ app.get("/show-admin",(req,res) => {
             ,{show_name:show_name[0].show_name,show_id:req.query.show_id,notices:noti_res,
             all_cast:all_cast_res,rolls:roll_res});
     }
+    //ログイン確認
+    //loginCheck(req,res);
     show_admin();
 
 })
@@ -404,7 +451,8 @@ app.post("/show-admin/report-detail",(req,res) => {
             return ins_ent.insertId
         }
     }
-    
+    //ログイン確認
+    //loginCheck(req,res);
     //報告公開
     if(req.body["check-confirm"] == true){ 
         insert_shift();
@@ -456,10 +504,12 @@ app.get("/show-admin/create-position",(req,res) =>{
             show_id:req.query.show_id, rolls:roll_res, show_name:show_name[0].show_name,
             roll_cast: roll_cast_res,all_cast:cast_res});
     }
+    //ログイン確認
+    //loginCheck(req,res);
     create_position();
 });
 
-//ポジション追加POST(ファイル表示してない！)
+//ポジション追加POST
 //http://localhost:3000/show-admin/create-position
 app.post("/show-admin/create-position",(req,res) => {
     let insert_new_roll = async() => {
@@ -502,11 +552,15 @@ app.post("/show-admin/create-position",(req,res) => {
         //完了画面表示→ショーホーム画面へ遷移
         res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.show_id});
     }
+    //ログイン確認
+    //loginCheck(req,res);
     insert_new_roll();
 });
 
 //アナウンス追加
 app.get("/show-admin/announce",(req,res) => {
+    //ログイン確認
+    //loginCheck(req,res);
     res.render("announce_form.ejs",{show_id:req.query.show_id})
 });
 
@@ -519,6 +573,8 @@ app.post("/show-admin/announce",(req,res) => {
             {s_id:parseInt(req.body.show_id),title:req.body.title,content:req.body.content,date:d}
         );
     }
+    //ログイン確認
+    //loginCheck(req,res);
     insert_announce();
     //完了画面表示→ショーホーム画面へ遷移
     res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.show_id});
@@ -554,6 +610,8 @@ app.get("/show-admin/shift-edit",(req,res) => {
             rolls:roll_res,roll_cast:roll_cast_res,all_cast:cast_res,tt:tt_res
             ,shift:render_shift,td:day_and_time});
     }
+    //ログイン確認
+    //loginCheck(req,res);
     shift_edit();
 })
 
@@ -574,7 +632,8 @@ app.post("/show-admin/shift-edit",(req,res) => {
         //完了画面表示→ショーホーム画面へ遷移
         res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.show_id});
     }
-
+    //ログイン確認
+    //loginCheck(req,res);
     //編集確定
     if(req.body["check-confirm"] == true){ 
         change_shift();
@@ -634,7 +693,7 @@ app.get("/entertainer-home",(req,res) => {
 app.get("/entertainer/report",(req,res) => {
     let ent_report = async() => {
         let [all_cast_res] =  await con.query(ENT_SQL);
-        res.render("out_of_park_report.ejs",{all_cast:all_cast})
+        res.render("out_of_park_report.ejs",{all_cast:all_cast_res})
     }
     ent_report();
 });
@@ -647,6 +706,7 @@ app.post("/entertainer/report",(req,res) => {
 
         req.render("form_end_page.ejs",{url:req.originalUrl,show_id:ent_id})
     }
+    insert_db()
 })
 
 
@@ -687,6 +747,8 @@ app.get("/entertainer/rename",(req,res) => {
         let [ent_res] = await con.query("select * from entertainer where entertainer_id > 2;");
         res.render("rename_entertainer.ejs",{all_cast:ent_res})
     }
+    //ログイン確認
+    //loginCheck(req,res);
     rename()
 })
 
@@ -697,6 +759,8 @@ app.post("/entertainer/rename",(req,res) => {
                 where entertianer_id = :id;",
                 {id:parseInt(req.body.before_name),name:req.body.after_name});
     }
+    //ログイン確認
+    //loginCheck(req,res);
     rename();
     //完了画面表示→enthome画面へ遷移
     res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.before_name});
@@ -709,11 +773,15 @@ app.get("entertainer/new-ent",(req,res) => {
         [all_cast_res] = await con.query(ENT_SQL);
         res.render("create_new_entertaier.ejs",{all_cast: all_cast_res});
     }
+    //ログイン確認
+    //loginCheck(req,res);
     create_new_ent();
 })
 
 //新人登録POST
 app.post("entertainer/new-ent",(req,res) => {
+    //ログイン確認
+    //loginCheck(req,res);
     //完了画面表示→enthome画面へ遷移
     res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.ent_id});
 })
