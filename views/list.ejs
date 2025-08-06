@@ -16,15 +16,14 @@
             </ul>
         </aside>
 
-        <% var kind = "";
-            if (kind_org === "/show-home"){
-                kind = "show";
-            }else if(kind_org === "/entertainer-home"){
-                kind = "entertainer"
-            }else if(kind_org === "/administrator-home"){
-                kind = "administrator"
-            }
-        %>
+        <% var kind = ""; %>
+        <%if (kind_org === "/show-home"){%>
+            <%kind = "show";%>
+        <%}else if(kind_org === "/entertainer-home"){%>
+            <%kind = "entertainer"%>
+        <%}else if(kind_org === "/administrator-home"){%>
+            <%kind = "administrator"%>
+        <%}%>
 
         <div class="main-body"> 
             <main>
@@ -37,18 +36,19 @@
                         管理者ページ
                     <% } %>
                 </h2>
-                <ul>
-                    <% for(let i = 0; i < list.length; i++){
-                        if(kind_org === "/show-home"){
-                            var link = 'http://localhost:3000/show?show_id=' + list[i].show_id;
-                            var name = list[i].show_name
-                        }else if(kind_org === "/entertainer-home"){
-                            var link = 'http://localhost:3000/entertainer?entertainer_id=' + list[i].entertainer_id;
-                            var name = list[i].entertainer_name
-                        }else if(kind_org === "/administrator-home"){
-                            var link = 'http://localhost:3000/show-admin?show_id=' + list[i].show_id;
-                            var name = list[i].show_name
-                        }%>
+                <input type="text" onInput="search(this)" id="search" placeholder="search">
+                <ul id="list">
+                    <% for(let i = 0; i < list.length; i++){ %>
+                        <% if(kind_org == "/show-home"){ %>
+                            <% var link = 'http://localhost:3000/show?show_id=' + list[i].show_id; %>
+                            <% var name = list[i].show_name %>
+                        <% }else if(kind_org == "/entertainer-home"){ %>
+                            <% var link = 'http://localhost:3000/entertainer?entertainer_id=' + list[i].entertainer_id; %>
+                            <% var name = list[i].entertainer_name %>
+                        <% }else if(kind_org == "/administrator-home"){ %>
+                            <% var link = 'http://localhost:3000/show-admin?show_id=' + list[i].show_id; %>
+                            <% var name = list[i].show_name %>
+                        <% }%>
                         <li>
                             <a href = <%= link %> >
                             <%= name %> 
@@ -61,6 +61,25 @@
                         </li>
                     <% } %>
                 </ul>
+                <script type="text/javascript">
+                    function search(e){
+                        let text = e.value
+                        let list = document.getElementById("list").children
+                        if(e.value != ""){
+                            list.forEach(ele => {
+                                if(ele.value.includes(text)){
+                                    ele.style.display = "";
+                                }else{
+                                    ele.style.display = "none";
+                                }
+                            });
+                        }else{
+                            list.forEach(ele => {
+                                ele.style.display = "";
+                            });
+                        }
+                    }
+                </script>
             </main>
         </div>
     </body>
