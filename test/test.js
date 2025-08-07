@@ -103,3 +103,19 @@ app.post("/",(req,res) => {
 //                 (e,r)=>{
 
 // })
+
+let test = async() => {
+    await con.query("insert into report (shift,type_of_report) value ('{}','{}');");
+    let [r] = await con.query("select last_insert_id();")
+    let report_id = r[0]["last_insert_id()"];
+    await con.query("insert into notice (show_id,type_of_message,content,report_id) \
+        value (1,'test','test'," + report_id + ");");
+    let [n] = await con.query("select last_insert_id();")
+    let n_id = n[0]["last_insert_id()"];
+
+    
+    await con.query("delete from notice where notice_id = " + n_id + ";")
+    await con.query("delete from report where report_id = " + report_id + ";")
+}
+
+test();

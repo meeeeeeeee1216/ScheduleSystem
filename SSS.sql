@@ -7,7 +7,7 @@ SET NAMES 'utf8mb4';
 -- アカウントに対して管理できるショーを紐づけるほうが良いのでは？
 CREATE TABLE SSS.account ( 
 account_id varchar(20) not null PRIMARY KEY,
-pw varchar(50) not null,
+pw longtext not null,
 mail text not null,
 SNS_id varchar(30) not null,
 SNS tinyint not null,

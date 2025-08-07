@@ -87,7 +87,7 @@
                                     <% } %>
 
                                     <td><a href =
-                                            <%= "http://localhost:3000/show-admin/delete-notice?notice_id=" + notice.notice_id%> >
+                                            <%= "http://localhost:3000/show-admin/delete-notice?notice_id=" + notice.notice_id + "&show_id=" + show_id + "&report_id=" + notice.report_id%> >
                                             削除（復元不可） </a></td>
                                     <td><button id=<%= "close-" + notice.notice_id %> onClick="close_detail(this)"> 閉じる</button></td>
                                 </tr>
