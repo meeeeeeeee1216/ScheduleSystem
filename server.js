@@ -733,7 +733,9 @@ app.get("/entertainer",(req,res)=>{
             where tt.day_and_time between :start and :end && entertainer_id = :id\
             order by tt.day_and_time asc;",{start:start,end:end,id:parseInt(req.query.entertainer_id)})
         res.render("entertainer_home.ejs",
-            {name:ent_res[0].entertainer_name,shift:shift_res,m:req.query.m,y:req.query.y});
+            {name:ent_res[0].entertainer_name,shift:shift_res,m:parseInt(req.query.m),y:parseInt(req.query.y),
+            ent_id:req.query.entertainer_id
+            });
     }
     entertainer();
 });

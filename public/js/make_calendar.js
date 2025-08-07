@@ -57,33 +57,7 @@ function render(){
   }
 }
 
-function reset_calendar(){
-  var body = document.getElementsByTagName("tbody");
-  body[0].remove();
-  const table = document.getElementsByTagName("table");
-  body = document.createElement("tbody");
-  table[0].appendChild(body);
-}
-
-
-var now = new Date();
-//前の月
-document.getElementById("prev").addEventListener("click",() => {
-  reset_calendar()
-  now.setMonth(now.getMonth() -1)
-  render();
-});
-
-//次の月
-document.getElementById("next").addEventListener("click",() => {
-  reset_calendar();
-  now.setMonth(now.getMonth()  + 1);
-  console.log(now.getFullYear());
-  console.log(now.getMonth());
-  console.log(now.getDate());
-  render();
-});
-render(0);
+render();
 
 
 

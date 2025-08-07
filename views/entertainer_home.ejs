@@ -51,9 +51,22 @@
                 </table>
             </div>
             <div id="btn">
-                <button id="prev">←前の月</button>
-
-                <button id="next">次の月→</button>
+                <% let prev_m = m-1
+                let next_m = m+1 
+                let prev_y = y;
+                let next_y = y;%>
+                <% if(prev_m == 0){
+                    prev_m = 12;
+                    prev_y = prev_y - 1
+                }
+                if(next_m == 13){
+                    next_m = 1;
+                    next_y = next_y +  1;
+                } %>
+                <a href= <%= "http://localhost:3000/entertainer?entertainer_id=" + ent_id + "&y=" + prev_y + "&m=" + prev_m %> >
+                ←前の月</a>
+                <a href= <%= "http://localhost:3000/entertainer?entertainer_id=" + ent_id + "&y=" + next_y + "&m=" + next_m %> >
+                次の月→</a>
             </div>
             
         </main>
