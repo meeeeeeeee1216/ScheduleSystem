@@ -10,17 +10,17 @@
 
         <aside>
             <ul>
-                <li><a href="http://localhost:3000/show">ショーページ一覧</a></li>
-                <li><a href="http://localhost:3000/entertainer">キャストページ一覧</a></li>
-                <li><a href="http://localhost:3000/administrator">ショー管理（要ログイン）</a></li>
+                <li><a href="http://localhost:3000/show-home">ショーページ一覧</a></li>
+                <li><a href="http://localhost:3000/entertainer-home">キャストページ一覧</a></li>
+                <li><a href="http://localhost:3000/administrator-home">ショー管理（要ログイン）</a></li>
             </ul>
         </aside>
         <div class="datas" style="display: none;">
             <select id="shift">
                 <% shift.forEach(s => { %>
-                    <option id= <%= s.day_and_time.getDate() %> 
-                        value = <%= s.day_and_time.getHours() + ":" + s.day_and_time.getMinutes() + "\n"
-                        + s.show_name + "\n" + s.roll_name %> >
+                    <option name= <%= s.day_and_time.getDate() +"-shift"%> >
+                        <%= s.day_and_time.getHours() + "時" + s.day_and_time.getMinutes() + "分" + ":"
+                        + s.show_name  + s.roll_name %>
                     </option>
                 <% }); %>
             </select>

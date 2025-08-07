@@ -2,10 +2,8 @@ function render(){
 
   const body = document.getElementsByTagName("tbody");
 
-  const shift = document.getElementById("shift").options;
-
-  const today_Y = parseInt(document.getElementById("year"));
-  const today_M = paraseInt(document.getElementById("month")) - 1;
+  const today_Y = parseInt(document.getElementById("year").value);
+  const today_M = parseInt(document.getElementById("month").value) - 1;
   //最初の曜日
   const firstday = new Date(today_Y, today_M, 1).getDay();
   //最後の日付
@@ -35,19 +33,20 @@ function render(){
     }
     let shift_text = ""
     //シフトを持ってくる
-    shift.forEach(s => {
-      if(dateArray[i] == s.id){
-        shift_text += s.value;
-      }else{
-        break
-      }
-    });
-
+    let shift = document.getElementsByName(dateArray[i]+"-shift");
+    shift.forEach(s=> {
+      shift_text += s.innerText;
+    })
+    // for(let s=0;s.length;s++){
+    //   console.log("a")
+    //   console.log(shift[s])
+    //   shift_text += shift[s].innerText;
+    // }
     //枠追加
     tmp.push(document.createElement("td"));
     //範囲内だったら文字を入れる
     if(dateArray[i] >= 1 && dateArray[i] <= lastdate){
-        tmp[tmp.length -1].innerText = dateArray[i] + "日" + "\n" + shift_text;
+        tmp[tmp.length -1].innerText = dateArray[i] + "日"  + shift_text;
         tmp[tmp.length -1].id = toString(dateArray[i]);
     }
     rows[rows.length -1].appendChild(tmp[tmp.length -1]);

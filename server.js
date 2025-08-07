@@ -40,7 +40,7 @@ app.use(bodyParser.json());
 
 app.use(cookie_parser());
 
-//変数
+//環境変数にしたい
 const LOGIN_SECRET_KEY = "SECRET_KEY";
 
 //=======================================================================
@@ -730,8 +730,8 @@ app.get("/entertainer",(req,res)=>{
             join Time_table as tt using(tt_id) \
             join roll using(roll_id) \
             join entertainment_show as es on es.show_id = shift.show_id \
-            where tt.day_and_time between :start and :end \
-            order by tt.day_and_time asc;",{start:start,end:end})
+            where tt.day_and_time between :start and :end && entertainer_id = :id\
+            order by tt.day_and_time asc;",{start:start,end:end,id:parseInt(req.query.entertainer_id)})
         res.render("entertainer_home.ejs",
             {name:ent_res[0].entertainer_name,shift:shift_res,m:req.query.m,y:req.query.y});
     }
