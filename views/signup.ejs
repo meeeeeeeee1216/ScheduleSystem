@@ -21,7 +21,7 @@
                 <div id = "id">
                     <p>アカウントID</p>
                     <input type="text" name="account_id" id="account_id" maxlength="20" requierd>
-                    <select id="all_account">
+                    <select id="all_account" style="display: none;">
                         <% all_account.forEach(account => { %>
                             <option value=<%= account.account_id %>></option>
                         <% }) %>

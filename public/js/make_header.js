@@ -30,6 +30,7 @@ signin_ele.id = "signin";
 signin_ele.addEventListener("click",function(){
   location.replace("http://localhost:3000/sign-in?error=0");
 }, false);
+
 //チェック用
 // signin_ele.onclick = "signin.html";
 signin_ele.textContent = "管理者ログイン";

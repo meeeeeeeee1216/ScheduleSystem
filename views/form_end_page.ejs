@@ -10,7 +10,7 @@
         </script>
     </head>
     <body>
-        <% let url = document.getElementById("url").value;
+        <% 
         let title = "";
         let attention = "";
         let get_name = "";
@@ -66,8 +66,8 @@
         <h2><%= title %> 完了</h2>
         <p><%= attention %></p>
         <p>5秒後に自動で<%= get_name %>に戻ります</p>
-        <form type="text" value=<%= show_id %> id="show_id" style="display: none;">
-        <form type="text" value=<%= url %> id="url" style="display: none;">
+        <input type="text" value=<%= show_id %> id="show_id" style="display: none;">
+        <input type="text" value=<%= url %> id="url" style="display: none;">
         <p>戻らなければ<a href= <%= get_to %>>こちらをクリック</a></p>
     </body>
 </html>

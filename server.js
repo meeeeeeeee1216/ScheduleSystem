@@ -59,6 +59,7 @@ app.get("/sign-up",(req,res) => {
         let [ac_res] = await con.query("select * from account");
         res.render("signup.ejs",{all_account:ac_res});
     }
+    sign_up()
 });
 
 //アカウント申請確認画面
@@ -69,16 +70,17 @@ app.post("/sign-up/check",function(req,res){
 
 //完了画面
 app.post("/sign-up/end",function(req,res){
-    async () => {
+    let insert_notice = async () => {
         let content = JSON.stringify(req.body);
         //サーバアカウントに申請通知を出す
         await con.query(
             'INSERT INTO notice (show_id,type_of_message,content) values (1,"アカウント申請",:content)',
             {content:content}
         );
-        let [insert_res] = con.query("select * from notice;");
+        let [insert_res] = await con.query("select * from notice;");
         console.log(insert_res);
     }
+    insert_notice();
     //完了画面の表示
     res.render("form_end_page.ejs",{url:req.originalUrl,show_id:null});
 });
@@ -86,16 +88,19 @@ app.post("/sign-up/end",function(req,res){
 //アカウント承認（serverアカウントのショー管理画面から承認GET）
 app.get("/accept-request",(req,res) => {
     let accept = async() => {
-        let [request_res] = await con.query("select content from noticce where notice_id = :notice_id",
+        console.log(req.query.notice_id)
+        let [request_res] = await con.query("select content from notice where notice_id = :notice_id",
             {notice_id:req.query.notice_id})
         let obj = JSON.parse(request_res[0].content);
+        console.log(typeof obj);
+        console.log(Object.keys(obj));
         //アカウントの承認
-        if("account_id" in obj.key){
+        if(Object.keys(obj).includes("account_id")){
             //autority:2 -> 管理アカウント, authority:1 -> サーバーアカウント
-            await con.query("insert into account (account_id,PW,SNSid,authority,sns,mail) value (:id,:PW,:sns_id,2,:sns,:mail);",
-                {id:obj.account_id,PW:obj.PW,sns_id:obj.sns_id,mail:obj.mail,sns:parseInt(obj.sns)}
+            await con.query("insert into account (account_id,PW,SNS_id,authority,sns,mail) value (:id,:PW,:sns_id,2,:sns,:mail);",
+                {id:obj.account_id,PW:obj.PW,sns_id:obj.SNS_id,mail:obj.mail,sns:parseInt(obj.SNS)}
             )
-        }else if("show_name" in obj.key){
+        }else if(Object.keys(obj).includes("show_name")){
             await con.query("insert into entertainment_show (show_name) value (:name);",
                 {name:obj["name"]}
             )
@@ -122,7 +127,10 @@ app.post("/administrator-home",function(req,res){
                 ,{id:req.body.account_id});
             if(db_res.length == 1){
                 //アカウントがある
-                let isPWCorrect = await bcrypt.compare(req.body.PW,db_res[0].PW);
+                console.log(req.body.PW);
+                console.log(db_res[0].pw);
+                let isPWCorrect = await bcrypt.compare(req.body.PW,db_res[0].pw);
+                console.log(isPWCorrect)
                 if(!isPWCorrect){
                     throw new Error();
                 }else{
@@ -225,19 +233,19 @@ const ROLL_CAST_SQL = "select distinct roll_name,entertainer_name,roll_id,entert
         where roll.show_id = :s_id;" 
 const TT_SQL = "select day_and_time from time_table where show_id = :s_id;"
 const ENT_SQL = "select * from entertainer;"
-//noticeからそのショーのnoticeとreportの一覧を持ってくる
-const NOTI_SQL = "select N.notice_id,N.type_of_message,N.content,\
-        N.day_and_time,R.shift,R.report_id \
-        from notice as N join report as R using(report_id) where N.show_id = :s_id;"
+//noticeからそのショーのnoticeの一覧を持ってくる
+const NOTI_SQL = "select * from notice where show_id = :s_id;"
 //noticeからreportのデータを持ってくる
-const REPORT_SQL =  "select N.notice_id,N.day_and_time,R.shift,R.report_id \
-        from notice as N join report as R using(report_id) \
-        where R.report_id = :r_id;"
+// const REPORT_SQL =  "select N.notice_id,N.day_and_time,R.shift,R.report_id \
+//         from notice as N join report as R using(report_id) \
+//         where R.report_id = :r_id;"
+// const REPORT_SQL = "select * from report where reoprt_id = :r_id;"
 
 //notice一覧
 // const NOTI_SQL = "select * from notice where show_id = :s_id;"
-const NOTI_REPORT_SQL = "select N.notice_id,N.day_and_time,R.shift,R.type_of_report\
- from notice where show_id = :s_id;"
+//reportがあるやつだけはこれで情報全部取得できる
+const NOTI_REPO_SQL = "select N.notice_id,N.day_and_time,R.shift,R.type_of_report\
+ from notice as N join report as R using(report_id) where show_id = :s_id;"
 
 
 //=============================================================================================
@@ -338,11 +346,13 @@ app.get("/show-admin",(req,res) => {
     let show_admin = async() => {
         let [show_name] = await con.query(SHOW_NAME_SQL,{s_id:parseInt(req.query.show_id)})
         let [noti_res] = await con.query(NOTI_SQL,{s_id:parseInt(req.query.show_id)})
+        let [noti_repo_res] = await con.query(NOTI_REPO_SQL,{s_id:parseInt(req.query.show_id)})
         let [roll_res] = await con.query(ROLL_SQL,{s_id:parseInt(req.query.show_id)})
         let [all_cast_res] = await con.query(ENT_SQL);
-        // console.log(roll_res)
+        console.log(noti_res)
         res.render("show_administrator.ejs"
-            ,{show_name:show_name[0].show_name,show_id:req.query.show_id,notices:noti_res,
+            ,{show_name:show_name[0].show_name,show_id:req.query.show_id,
+                notices:noti_res,noti_repo:noti_repo_res,
             all_cast:all_cast_res,rolls:roll_res});
     }
     //ログイン確認

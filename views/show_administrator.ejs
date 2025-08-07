@@ -36,28 +36,36 @@
                                 <tr id="test" bgcolor="gray">
                                     <td><%= notice.notice_id %></td>
                                     <td><%= notice.type_of_message %></td>
-                                    <td><%= notice.day_and_time.toLocaleString()%></td>
-                                </th>
-                                    <td><button id=<%= "open" + notice.notice_id %> onClick="show_detail(this)"> 詳細表示</td>
+                                    <td>
+                                    <% if(notice.day_and_time != null){ %>
+                                        <%= notice.day_and_time.toLocaleString()%>
+                                    <% }%>
+                                    </td>
                                 </tr>
+                                </th>
+                                    <td><button id=<%= "open" + notice.notice_id %> onClick="show_detail(this)"> 詳細表示</button></td>
+                                </tr>
+                                
                                 <tr id= <%= "shift-detail-" + notice.notice_id %> style="display : none;">
                                     <td><b>シフト</b></td>
                                     <td colspan="3">
-                                        <% console.log(rolls) %>
-                                        <% if(notice.report_id != 1){ %>
-                                            <% for(var roll in notice.shift){ %>
-                                                <% console.log(rolls) %>
-                                                <% rolls.forEach(rs => { %>
-                                                    <% if(parseInt(roll) == rs.roll_id){ %>
-                                                        <% all_cast.forEach(ac => { %>
-                                                            <% if(parseInt(notice.shift[roll]) == ac.entertainer_id){ %>
-                                                                <%= rs.roll_name %> : <%= ac.entertainer_name %> <br>
-                                                            <% } %>
-                                                        <% }); %>
-                                                    <% } %>
-                                                <% }); %>
+                                    <% if(notice.report_id != null){ %>
+                                        <% noti_repo.forEach(np => { %>
+                                            <%if(np.notice_id == notice.notice_id) {%>
+                                                <% for(var roll in np.shift){ %>
+                                                    <% rolls.forEach(rs => { %>
+                                                        <% if(parseInt(roll) == rs.roll_id){ %>
+                                                            <% all_cast.forEach(ac => { %>
+                                                                <% if(parseInt(notice.shift[roll]) == ac.entertainer_id){ %>
+                                                                    <%= rs.roll_name %> : <%= ac.entertainer_name %> <br>
+                                                                <% } %>
+                                                            <% }); %>
+                                                        <% } %>
+                                                    <% }); %>
+                                                <% } %>
                                             <% } %>
-                                        <% } %>
+                                        <% }) %>
+                                    <% } %>
                                     </td>
                                 </tr>
                                 <tr id= <%= "other-detail-" + notice.notice_id %> style="display : none;">
@@ -70,17 +78,18 @@
                                     <td><b>各種操作</b></td>
                                     <% if(show_id != 1){ %>
                                         <td><a href =
-                                            <%= "location.href='http://localhost:3000/show-admin/report-detail?show_id=" + show_id + "&report_id=" + notice.report_id +  "'"%> >
+                                            <%= "http://localhost:3000/show-admin/report-detail?show_id=" + show_id + "&report_id=" + notice.report_id %> >
                                             報告編集・公開 </a></td>
                                     <% }else{ %>
-                                        <td><form action= <%= "http://localhost:3000/accept-request?notice_id=" + notice.notice_id %> method="get">
-                                                <button type="submit">申請承認</td>
+                                        <td><a href =
+                                            <%= "http://localhost:3000/accept-request?notice_id=" + notice.notice_id%> >
+                                            申請承認</a></td>
                                     <% } %>
 
                                     <td><a href =
-                                            <%= "location.href='http://localhost:3000/show-admin/delete-notice?notice_id=" + notice.notice_id + "'"%> >
+                                            <%= "http://localhost:3000/show-admin/delete-notice?notice_id=" + notice.notice_id%> >
                                             削除（復元不可） </a></td>
-                                    <td><button id=<%= "close-" + notice.notice_id %> onClick="close_detail(this)"> 閉じる</td>
+                                    <td><button id=<%= "close-" + notice.notice_id %> onClick="close_detail(this)"> 閉じる</button></td>
                                 </tr>
                             <% }); %>
                             <!-- 詳細表示 -->
