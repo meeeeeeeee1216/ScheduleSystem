@@ -215,7 +215,7 @@ VALUE
 -- ('C2役',2,NULL),	
 -- ('D2役',2,NULL);
 
---ID：１シフト報告のないnotice用
+--１シフト報告のない報告用
 insert into report (shift)
 VALUE
 ("{}");

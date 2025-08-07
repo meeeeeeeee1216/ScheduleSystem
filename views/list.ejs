@@ -10,9 +10,9 @@
 
         <aside>
             <ul>
-                <li><a href="http://localhost:3000/show">ショーページ一覧</a></li>
-                <li><a href="http://localhost:3000/entertainer">キャストページ一覧</a></li>
-                <li><a href="http://localhost:3000/administrator">ショー管理（要ログイン）</a></li>
+                <li><a href="http://localhost:3000/show-home">ショーページ一覧</a></li>
+                <li><a href="http://localhost:3000/entertainer-home">キャストページ一覧</a></li>
+                <li><a href="http://localhost:3000/administrator-home">ショー管理（要ログイン）</a></li>
             </ul>
         </aside>
 
@@ -36,7 +36,7 @@
                         管理者ページ
                     <% } %>
                 </h2>
-                <input type="text" onInput="search(this)" id="search" placeholder="search">
+                <input type="text" id="search" placeholder="search">
                 <ul id="list">
                     <% for(let i = 0; i < list.length; i++){ %>
                         <% if(kind_org == "/show-home"){ %>
@@ -49,7 +49,7 @@
                             <% var link = 'http://localhost:3000/show-admin?show_id=' + list[i].show_id; %>
                             <% var name = list[i].show_name %>
                         <% }%>
-                        <li>
+                        <li id=<%= i  + "-li"%>>
                             <a href = <%= link %> >
                             <%= name %> 
                             </a>
@@ -62,23 +62,26 @@
                     <% } %>
                 </ul>
                 <script type="text/javascript">
-                    function search(e){
-                        let text = e.value
+                    let bar = document.getElementById("search");
+                    bar.addEventListener("keydown",() => {
+                        let text = bar.value;
                         let list = document.getElementById("list").children
-                        if(e.value != ""){
-                            list.forEach(ele => {
-                                if(ele.value.includes(text)){
-                                    ele.style.display = "";
+                        if(text != ""){
+                            for(let i= 0;i<list.length;i++){
+                                let li = document.getElementById(i + "-li");
+                                if(li.innerText.includes(text)){
+                                    li.style.display = "";
                                 }else{
-                                    ele.style.display = "none";
+                                    li.style.display = "none";
                                 }
-                            });
+                            }
                         }else{
-                            list.forEach(ele => {
-                                ele.style.display = "";
-                            });
+                            for(let i= 0;i<list.length;i++){
+                                let li = document.getElementById(i + "-li");
+                                li.style.display = "";
+                            }
                         }
-                    }
+                    });
                 </script>
             </main>
         </div>

@@ -9,7 +9,7 @@ const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const cookie_parser = require("cookieParser");
+const cookie_parser = require("cookie-parser");
 app.set('view engine','ejs')
 
 //ポートを開く
@@ -38,7 +38,7 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 
-app.use(cookieParser());
+app.use(cookie_parser());
 
 //変数
 const LOGIN_SECRET_KEY = "SECRET_KEY";

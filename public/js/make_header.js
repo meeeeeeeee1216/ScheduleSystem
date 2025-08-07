@@ -19,6 +19,9 @@ const title_ele = document.createElement("h1");
 title_ele.id = "title";
 title_ele.textContent = "ショーシフト管理システム";
 title_ele.style.display = 'inline';
+title_ele.addEventListener("click",() => {
+  location.href = "http://localhost:3000/home"
+})
 div_ele.appendChild(title_ele);
 
 const signin_ele = document.createElement("button");
