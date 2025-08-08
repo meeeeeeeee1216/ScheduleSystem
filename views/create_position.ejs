@@ -10,33 +10,37 @@
         <main>
             <div class="title">
                 <h2><%= show_name %> 新ポジション登録</h2>
+                <ul>
+                    <li><b>すでに公開されているシフト</b>に対してのみポジション登録を行うことができます</li>
+                    <li>すでに登録されているポジションと同じ名前で登録することはできません。表記を分けて登録してください（〇〇１,〇〇２など）</li>
+                    <li><b>新人や未登録のキャスト</b>が新ポジションを担当した場合は、
+                        <a href=<%= "http://localhost:3000/entertainer/new-ent?redirect=/show-admin/create-position?show_id=" + show_id %>>
+                            ここから</a>
+                        登録を行ったのち、新ポジションの追加をおこなってください</li>
+                </ul>
             </div>
-            <form action=<%= "http://localhost:3000/show-admin/create-position?show_id=" + show_id %> method="post">
+            <form action=<%= "http://localhost:3000/show-admin/create-position"%> method="post">
                 <div id="info">
                     <h3>＜ポジションが増えた　公演の日時＞</h3>
-                    <input type="datetime-local" name="time" require>
+                    <select name="time" required>
+                        <% tt.forEach(tt => { %>
+                            <option value=<%= tt.tt_id %>><%=tt.day_and_time.toLocaleString() %></option>
+                        <% }) %>
+                    </select>
                 </div>
                 <div id="new-roll">
                     <h3>新ポジション登録</h3>
-                    <p>すでに登録されているポジションと同じ名前で登録することはできません。表記を分けて登録してください（〇〇１,〇〇２など）</p>
-                    <br>
                     <p style="display:inline-block">ポジション名：</p>
                     <input type="text" name="position_name" id="position_name">
                     <br>
+                    <p style="display:inline-block">ポジションが増えたときに担当したキャスト名：</p>
                     <select name="ent_name" id="all_cast">
-                        <option value="0" > 不明 </option>
                         <% all_cast.forEach(cast => { %>
                             <option value=<%=cast.entertainer_id %> > <%= cast.entertainer_name %> </option>
                         <% });%>
                     </select>
-                    <br>
-                    <p>新人キャストが担当した場合はこちらに入力</p>
-                    <p>ほかのショーも含め同一名でのキャスト登録ができません。同姓同名キャストが複数存在する場合は表記を分けて登録してください。</p>
-                    <p>同一名キャストの競合を避けるため、可能な限りSNSのアカウント名など正確な活動名で登録することを推奨します。</p>
-                    <p>複数の呼称が存在するキャストについては（）などを用いてすべての表記を記載してください</p>
-                    <p>名前が判明していない場合はショー名を入れるなど競合を避けるよう工夫してください。（例：パレード2025_新人Ａなど）</p>
-                    <input type="text" name="ent_name_text" id="ent_name_text">
                 </div>
+                <input type="text" name="show_id" style="display: none;" value=<%= show_id %> >
                 <button name="send" type="submit" onSubmit="return check_Unregistered">追加</button>
             </form>
 

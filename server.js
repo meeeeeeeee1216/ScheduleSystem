@@ -237,7 +237,7 @@ const SHIFT_SQL = "select tt.day_and_time,tt.tt_id,roll.roll_name,entertainer.en
 const ROLL_CAST_SQL = "select distinct roll_name,entertainer_name,roll_id,entertainer_id \
         from Shift join roll using(roll_id) join entertainer using(entertainer_id) \
         where roll.show_id = :s_id;" 
-const TT_SQL = "select day_and_time from time_table where show_id = :s_id;"
+const TT_SQL = "select * from time_table where show_id = :s_id;"
 const ENT_SQL = "select * from entertainer;"
 //noticeからそのショーのnoticeの一覧を持ってくる
 const NOTI_SQL = "select * from notice where show_id = :s_id;"
@@ -388,7 +388,7 @@ app.get("/show-admin/delete-notice",(req,res) =>{
 
 });
 
-//報告詳細確認画面
+//報告詳細確認（報告編集・公開）
 // http://localhost:3000/show-admin/report-detail?show_id=2&report_id=2&notice_id=2
 app.get("/show-admin/report-detail",(req,res) => {
     let report_detail = async() => {
@@ -411,11 +411,6 @@ app.get("/show-admin/report-detail",(req,res) => {
 });
 
 
-//未登録を登録したあとに編集ページに戻ると、デビューが登録済みの表示になっちゃうので、
-//ステータスかなんかをやっぱりつけてやるべきかも
-//不明（誰だかわからない）をinsertしちゃうと、後から追加報告されたものを反映させたときにupdateしなきゃいけないので、
-//不明（id：１）はinsertしない
-//つまり表示は空欄になる
 //シフト編集・公開POST
 // http://localhost:3000/show-admin/report-detail
 app.post("/show-admin/report-detail",(req,res) => {
@@ -462,9 +457,10 @@ app.get("/show-admin/create-position",(req,res) =>{
         let [roll_res] = await con.query(ROLL_SQL,{s_id:parseInt(req.query.show_id)})
         let [roll_cast_res] = await con.query(ROLL_CAST_SQL,{s_id:parseInt(req.query.show_id)})
         let [cast_res] = await con.query(ENT_SQL)
+        let [tt_res] = await con.query(TT_SQL,{s_id:parseInt(req.query.show_id)})
         res.render("create_position.ejs",{
             show_id:req.query.show_id, rolls:roll_res, show_name:show_name[0].show_name,
-            roll_cast: roll_cast_res,all_cast:cast_res});
+            tt:tt_res,all_cast:cast_res});
     }
     //ログイン確認
     loginCheck(req,res);
@@ -478,38 +474,12 @@ app.post("/show-admin/create-position",(req,res) => {
         //役名登録
         let [ins_roll] = await con.query("insert into roll (roll_name,show_id) value (:name,:s_id)",
         {name:req.body["position_name"],s_id:req.body["show_id"]});
-        //inかundefinedか""かどれだろう
-        let ent_id = null;
-        let tt_id = null;
-        //新人デビューだった場合
-        if(req.body in "ent_name_txt"){
-            let [ins_ent] = await con.query("insert into entertainer entertainer_name value :ent_name",
-                {ent_name:req.body["ent_name_text"]})
-            ent_id = ins_ent.insertId;
-        }else{
-            let [ins_ent] = await con.query("select entertainer_id from entertainer\
-                 where entertainer_id = :name",{name:req.body["ent_name"]})
-            ent_id = ins_ent.entertainer_id;
-        }
-        //tt登録判定
-        let [tt_res] = await con.query("select count(*) from time_table where day_and_time = :td",
-                {td:req.body["time"]})
-        if(tt_res["count(*)"] == 0){
-            //未登録
-            let [ins_tt] = await con.query("insert into time_table (day_and_time,show_id) value (:dt,:s_id)",
-                        {dt:req.body["time"],s_id:parseInt(req.body.show_id)});
-            tt_id = ins_tt.insertId;
-        }else{
-            //登録済み
-            let [ins_tt] = await con.query("select tt_id from Time_table where show_id = :s_id \
-                 and day_and_time = :td"
-                        ,{s_id:parseInt(req.body.show_id),td:req.body["time"]});
-            tt_id = ins_tt.tt_id
-        }
+        console.log(req.body)
         //shiftに登録
         await con.query("insert into shift (tt_id,roll_id,entertainer_id,show_id) \
             value (:tt_id,:r_id,:ent_id,:s_id)",
-            {tt_id:tt_id,r_id:ins_roll.insertId,ent_id:ent_id,s_id:parseInt(req.body.show_id)})
+            {tt_id:parseInt(req.body.time),r_id:ins_roll.insertId,
+                ent_id:parseInt(req.body.ent_name),s_id:parseInt(req.body.show_id)})
         
         //完了画面表示→ショーホーム画面へ遷移
         res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.show_id});
@@ -520,6 +490,7 @@ app.post("/show-admin/create-position",(req,res) => {
 });
 
 //アナウンス追加
+//http://localhost:3000/show-admin/announce?show_id=
 app.get("/show-admin/announce",(req,res) => {
     //ログイン確認
     loginCheck(req,res);
