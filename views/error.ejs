@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>ショーシフト管理システム</title>
+    </head>
+    <body>
+        <!-- タイトルヘッダーを作る -->
+        <script src="public/js/make_header.js"></script>
+        <div class="main-body"> 
+            <main>
+                <h2><%=kind%>エラー</h2>
+                <% if(kind=="DB"){ %>
+                    <p>お手数をおかけしますが再度フォームを送信してください。</p>
+                    <p>自動で入力画面に戻ります。</p>
+                    <p>戻らない場合は<a href=<%="http://localhost:3000" + url %>>こちらをクリック</a></p>
+                <% }else if(kind=="ログイン") {%>
+                    <p>ログアウトされています</p>
+                    <p>再度ログインしてください</p>
+                    <p>自動でログイン画面に移動します</p>
+                    <p>移動しない場合は<a href="http://localhost:3000/sign-in">こちらをクリック</a></p>
+                <%}%>
+            </main>
+        </div>
+    </body>
+</html>

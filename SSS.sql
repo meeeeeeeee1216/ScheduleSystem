@@ -19,12 +19,12 @@ show_name VARCHAR(30) NOT NULL,
 administrator_id varchar(20) NOT NULL,
 FOREIGN KEY (administrator_id) references account(account_id));
 
--- CREATE TABLE SSS.co_editor(
--- show_id INT NOT NULL,
--- account_id varchar(30) NOT NULL,
--- PRIMARY KEY (show_id, account_id) ,
--- FOREIGN KEY (show_id) references entertainment_show(show_id),
--- FOREIGN KEY (account_id) references account(account_id));
+CREATE TABLE SSS.co_editor(
+co_editor_id int AUTO_INCREMENT not null,
+show_id INT NOT NULL,
+account_id varchar(30) NOT NULL,
+FOREIGN KEY (show_id) references entertainment_show(show_id),
+FOREIGN KEY (account_id) references account(account_id));
 
 CREATE TABLE SSS.roll(
 roll_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
