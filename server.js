@@ -245,7 +245,7 @@ const NOTI_SQL = "select * from notice where show_id = :s_id;"
 // const REPORT_SQL =  "select N.notice_id,N.day_and_time,R.shift,R.report_id \
 //         from notice as N join report as R using(report_id) \
 //         where R.report_id = :r_id;"
-// const REPORT_SQL = "select * from report where reoprt_id = :r_id;"
+const REPORT_SQL = "select * from report where report_id = :r_id;"
 
 //notice一覧
 // const NOTI_SQL = "select * from notice where show_id = :s_id;"
@@ -389,7 +389,7 @@ app.get("/show-admin/delete-notice",(req,res) =>{
 });
 
 //報告詳細確認画面
-// http://localhost:3000/show-admin/report-detail?show_id=2&report_id=2 
+// http://localhost:3000/show-admin/report-detail?show_id=2&report_id=2&notice_id=2
 app.get("/show-admin/report-detail",(req,res) => {
     let report_detail = async() => {
         let [show_name] = await con.query(SHOW_NAME_SQL,{s_id: parseInt(req.query.show_id)});
@@ -398,11 +398,13 @@ app.get("/show-admin/report-detail",(req,res) => {
         let [tt_res] = await con.query(TT_SQL,{s_id: parseInt(req.query.show_id)});
         let [cast_res] = await con.query(ENT_SQL);
         let [report_res] = await con.query(REPORT_SQL,{r_id:parseInt(req.query.report_id)})
-
+        let [notice_res] = await con.query("select * from notice where notice_id = :n_id;",{n_id:parseInt(req.query.notice_id)})
+        console.log(report_res)
          res.render("shift_report_edit.ejs",
                 {title:"シフト報告の編集・公開",show_id:req.query.show_id,show_name:show_name[0].show_name,
                 rolls:roll_res,roll_cast:roll_cast_res,all_cast:cast_res,tt:tt_res
-                ,shift:report_res[0].shift,td:report_res[0].day_and_time,
+                ,shift:report_res[0].shift,shift_type:report_res[0].type_of_report,
+                td:notice_res[0].day_and_time,
                 report_id:report_res[0].report_id,notice_id:req.query.notice_id});
     }
     report_detail()
@@ -425,10 +427,11 @@ app.post("/show-admin/report-detail",(req,res) => {
         let [ins_tt] = await con.query("insert into Time_Table (show_id,day_and_time) value (:s_id,:t)",
             {s_id: parseInt(req.body.show_id),t:req.body.time});
         //TT削除してシフト情報だけにする
-        delete req.body.time,req.body["check-conform"]
+        delete req.body.time
+        console.log(req.body);
         //ポジション毎にShiftについか
         for(var roll_id in req.body){
-            if(parseInt(req.body[roll_id]) != 1){
+            if(parseInt(req.body[roll_id]) != 1 && parseInt(req.body[roll_id]) != NaN){
                 await con.query("insert into shift (tt_id,roll_id,entertainer_id,show_id) \
                     value (:tt_id,:r_id,:ent_id,:s_id)",
                     {tt_id:parseInt(ins_tt.insertId),
@@ -438,70 +441,17 @@ app.post("/show-admin/report-detail",(req,res) => {
             }
         }
         //reportとnoticeを削除
-        await con.query("delete from report where report_id = :r_id",
-            {r_id:parseInt(req.body.report_id)});
         await con.query("delete from notice where report_id = :r_id",
             {n_id:parseInt(req.body.report_id)});
-
+        await con.query("delete from report where report_id = :r_id",
+            {r_id:parseInt(req.body.report_id)});
         //完了画面表示→ホーム画面へ遷移
         res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.show_id});;
-    }
-
-    let insert_ent = async(roll) => {
-        //チェックボックスがチェックされてたら変更したところ
-        //req.body -> {time:時間,"roll_id":"entertainer_id" or "debut_new"...}
-        if(req.body["edit-check" + roll.roll_id] == true){
-            delete req.body["edit-check" + roll.roll_id]
-            //キャストをテーブルに登録
-            let [ins_ent] = await con.query("insert into entertainer (entertainer_name) value (:ent_name)"
-                ,{ent_name:req.body["debut_new" + roll.roll_id]})
-
-            let [repot_res] = await con.query("* from report where report_id = :r_id",
-                {r_id:req.body.report_id}
-            )
-            
-            return ins_ent.insertId
-        }
     }
     //ログイン確認
     loginCheck(req,res);
     //報告公開
-    if(req.body["check-confirm"] == true){ 
-        insert_shift();
-    //未登録キャスト登録
-    }else{
-        async() => {
-            let [rolls] = await con.query(ROLL_SQL,{s_id:req.body.show_id});
-            rolls.forEach(roll => {
-                let ent_id = insert_ent(roll);
-                req.body.shift[roll.roll_id] = "debut";
-                req.body.shift["debut" + element.roll_id] = ent_id;
-            })
-            await con.commit(function(err){
-                if(err) throw err;
-                con.rollback()
-            })
-            //render
-            let [show_name] = await con.query(SHOW_NAME_SQL,{s_id: parseInt(req.body.show_id)});
-            let [roll_res] = await con.query(ROLL_SQL,{s_id: parseInt(req.body.show_id)});
-            let [roll_cast_res] = await con.query(ROLL_CAST_SQL,{s_id: parseInt(req.body.show_id)});
-            let [tt_res] = await con.query(TT_SQL,{s_id: parseInt(req.body.show_id)});
-            let [cast_res] = await con.query(ENT_SQL);
-
-            let td = req.body.time;
-            let report_id = req.body.report_id;
-            let show_id = req.body.show_id;
-            delete req.body.time, req.body.report_id,req.body.show_id ;
-            
-            res.render("shift_report_edit.ejs",
-                {title:"シフト報告の編集・公開",show_id:show_id,show_name:show_name,
-                rolls:roll_res,roll_cast:roll_cast_res,tt:tt_res,all_cast:cast_res
-                ,shift:req.body,td:td,
-                report_id:report_id}
-            );
-
-        }
-    }
+    insert_shift();
 })
 
 //ポジション追加フォーム
@@ -782,10 +732,16 @@ app.post("/entertainer/rename",(req,res) => {
 });
 
 //新人登録
-app.get("entertainer/new-ent",(req,res) => {
+//演者一覧から登録ー＞http://localhost:3000/entertainer/new-ent
+//報告承認or編集or新ポジションからアクセスー＞
+// http://localhost:3000/entertainer/new-ent?name= &redirect= 
+app.get("/entertainer/new-ent",(req,res) => {
     let create_new_ent = async() => {
+        console.log(req.query.redirect);
         [all_cast_res] = await con.query(ENT_SQL);
-        res.render("create_new_entertaier.ejs",{all_cast: all_cast_res});
+        res.render("create_new_entertainer.ejs",{all_cast: all_cast_res,name:req.query.name,
+            redirect:req.query.redirect
+        });
     }
     //ログイン確認
     loginCheck(req,res);
@@ -793,10 +749,18 @@ app.get("entertainer/new-ent",(req,res) => {
 })
 
 //新人登録POST
-app.post("entertainer/new-ent",(req,res) => {
-    //ログイン確認
-    loginCheck(req,res);
-    //完了画面表示→enthome画面へ遷移
-    res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.ent_id});
+app.post("/entertainer/new-ent",(req,res) => {
+    let insert_ent = async() => {
+        await con.query("insert into entertainer (entertainer_name,bio) value (:name,:bio);",
+            {name:req.body.name,bio:req.body.bio})
+        let [ent_id] = await con.query("select last_insert_id();")
+        //ログイン確認
+        loginCheck(req,res);
+        //完了画面表示→enthome画面へ遷移
+        res.render("form_end_page.ejs",{url:req.originalUrl,show_id:ent_id[0]["last_insert_id()"],
+            redirect:req.body.redirect
+        });
+    }
+    insert_ent();
 })
 

@@ -16,6 +16,7 @@
                 <p><a href= <%= "http://localhost:3000/show-report?show_id=" + show_id %>> シフト報告はこちらから</a></p>
             </div>
             <div class="shift-calender">
+                <h3>シフト一覧</h3>
                 <% 
                     //shift_resを日時をカギにした連想配列に変える
                     //ex -> {"yyyy/mm/dd tt:mm:ss":{"roll_name":"entertainer_name"}}
@@ -65,10 +66,11 @@
                             <th>備考</th>
                         </tr>
                     </tbody>
+                </table>
             </div>
             <div class="admi-info">
                 <h3>管理者からのお知らせ</h3>
-                <table>
+                <table border="2">
                     <!-- テーブルでお知らせ一覧表示 -->
                     <tr>
                         <th>日時</th>

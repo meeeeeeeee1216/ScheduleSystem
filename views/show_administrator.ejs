@@ -41,25 +41,31 @@
                                         <%= notice.day_and_time.toLocaleString()%>
                                     <% }%>
                                     </td>
-                                </tr>
-                                </th>
                                     <td><button id=<%= "open" + notice.notice_id %> onClick="show_detail(this)"> 詳細表示</button></td>
                                 </tr>
                                 
                                 <tr id= <%= "shift-detail-" + notice.notice_id %> style="display : none;">
                                     <td><b>シフト</b></td>
                                     <td colspan="3">
+                                    <!-- シフト報告があるとき -->
                                     <% if(notice.report_id != null){ %>
                                         <% noti_repo.forEach(np => { %>
                                             <%if(np.notice_id == notice.notice_id) {%>
                                                 <% for(var roll in np.shift){ %>
                                                     <% rolls.forEach(rs => { %>
+                                                        <!-- 役名を見つける -->
                                                         <% if(parseInt(roll) == rs.roll_id){ %>
-                                                            <% all_cast.forEach(ac => { %>
-                                                                <% if(parseInt(notice.shift[roll]) == ac.entertainer_id){ %>
-                                                                    <%= rs.roll_name %> : <%= ac.entertainer_name %> <br>
-                                                                <% } %>
-                                                            <% }); %>
+                                                            <!-- 役名が数字（登録済みの演者）の場合 -->
+                                                            <% if(Number.isInteger(parseInt(np.shift[roll])) == true){ %>
+                                                                <% all_cast.forEach(ac => { %>
+                                                                    <% if(parseInt(np.shift[roll]) == ac.entertainer_id){ %>
+                                                                        <%= rs.roll_name %> : <%= ac.entertainer_name %> <br>
+                                                                    <% } %>
+                                                                <% }); %>
+                                                            <!-- 役者が文字列 -->
+                                                            <% } else { %>
+                                                                <%= rs.roll_name %> : <%= np.shift[roll] %> <br>
+                                                            <% } %> 
                                                         <% } %>
                                                     <% }); %>
                                                 <% } %>
@@ -78,7 +84,7 @@
                                     <td><b>各種操作</b></td>
                                     <% if(show_id != 1){ %>
                                         <td><a href =
-                                            <%= "http://localhost:3000/show-admin/report-detail?show_id=" + show_id + "&report_id=" + notice.report_id %> >
+                                            <%= "http://localhost:3000/show-admin/report-detail?show_id=" + show_id + "&notice_id=" + notice.notice_id + "&report_id=" + notice.report_id %> >
                                             報告編集・公開 </a></td>
                                     <% }else{ %>
                                         <td><a href =

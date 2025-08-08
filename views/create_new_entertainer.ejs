@@ -19,14 +19,15 @@
             </div>
             <form action="http://localhost:3000/entertainer/new-ent" method="post" name="form">
                 <p>キャスト名</p>
-                <input type="text" name="name" id="name" maxlength="50" requierd>
-                <select id="all_cast">
+                <input type="text" name="name" id="name" maxlength="50" requierd value=<%=name%> >
+                <select id="all_cast" style="display: none;">
                     <% all_cast.forEach(cast => { %>
                         <option value=<% cast.entertainer_name %>></option>
                     <% }) %>
                 </select>
                 <p>備考</p>
                 <textarea name="bio" rows="10" cols="60"></textarea>
+                <input type="text" name="redirect" style="display: none;" value=<%= redirect %>>
                 <button name="send" type="submit" onClick="check_name">送信</button>
             </form>
             <script language="javascript" type="text/javascript">

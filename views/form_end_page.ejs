@@ -5,7 +5,7 @@
         <title>ショーシフト管理システム</title>
         <script type="text/javascript">
             setTimeout(function(){
-                window.location.href = document.getElementById("trans_page").value
+                window.location.href = document.getElementById("url").value
             }, 5 * 1000);
         </script>
     </head>
@@ -15,6 +15,9 @@
         let attention = "";
         let get_name = "";
         let get_to = "";
+        let d = new Date();
+        let y = d.getFullYear();
+        let m = d.getMonth();
         if(url == "/sign-up/end"){
            title = "管理アカウント申請"
            attention = "登録完了まで今しばらくお待ちください\n完了後、登録メールアドレスに通知が送信されます"
@@ -29,35 +32,40 @@
             title = "シフト報告　送信"
             attention = "管理者が報告を確認次第、情報が公開されます。"
             get_name = "シフトの公開画面"
-            get_to = "http://localhost:3000/show?show_id=" + document.getElementById("show_id").value
+            get_to = "http://localhost:3000/show?show_id=" + show_id
         }else if(url == "/show-admin/report-detail"){
             title = "シフト公開"
             get_name = "シフトの公開画面"
-            get_to = "http://localhost:3000/show?show_id=" + document.getElementById("show_id").value
+            get_to = "http://localhost:3000/show?show_id=" + show_id
         }else if(url == "/show-admin/create-position"){
             title = "ポジション登録"
             get_name = "シフトの公開画面"
-            get_to = "http://localhost:3000/show?show_id=" + document.getElementById("show_id").value
+            get_to = "http://localhost:3000/show?show_id=" + show_id
         }else if(url == "/show-admin/announce"){
             title = "アナウンス作成"
             get_name = "シフトの公開画面"
-            get_to = "http://localhost:3000/show?show_id=" + document.getElementById("show_id").value
-        }else if(url == "/show-admin/shift-edit"){
+            get_to = "http://localhost:3000/show?show_id=" + show_id
+        }else if(url == "/show-admin/report-detail"){
             title = "シフト編集"
             get_name = "シフトの公開画面"
-            get_to = "http://localhost:3000/show?show_id=" + document.getElementById("show_id").value
+            get_to = "http://localhost:3000/show?show_id=" + show_id
         }else if(url == "/entertainer/rename"){
             title = "キャストの名前編集"
             get_name = "キャストのホーム"
-            get_to = "http://localhost:3000/entertainer?entertainer_id=" + document.getElementById("show_id").value
+            get_to = "http://localhost:3000/entertainer?entertainer_id=" + show_id + "&y=" + y + "&m=" + m
         }else if(url == "/entertainer/new-ent"){
             title = "新人キャスト登録"
             get_name = "キャストのホーム"
-            get_to = "http://localhost:3000/entertainer?entertainer_id=" + document.getElementById("show_id").value
+            if(redirect == ""){
+                get_to = "http://localhost:3000/entertainer?entertainer_id=" + show_id + "&y=" + y + "&m=" + m
+            }else{
+                redirect = redirect.replaceAll("AND","&")
+                get_to = "http://localhost:3000" + redirect
+            }
         }else if(url == "/entertainer/report"){
             title = "外部公演の登録"
             get_name = "キャストのホーム"
-            get_to = "http://localhost:3000/entertainer?entertainer_id=" + document.getElementById("show_id").value
+            get_to = "http://localhost:3000/entertainer?entertainer_id=" + show_id + "&y=" + y + "&m=" + m
         }
         %>
 
@@ -66,8 +74,7 @@
         <h2><%= title %> 完了</h2>
         <p><%= attention %></p>
         <p>5秒後に自動で<%= get_name %>に戻ります</p>
-        <input type="text" value=<%= show_id %> id="show_id" style="display: none;">
-        <input type="text" value=<%= url %> id="url" style="display: none;">
+        <input type="text" value=<%= get_to %> id="url" style="display: none;">
         <p>戻らなければ<a href= <%= get_to %>>こちらをクリック</a></p>
     </body>
 </html>
