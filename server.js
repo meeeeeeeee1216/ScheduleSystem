@@ -168,7 +168,6 @@ app.post("/administrator-home",async(req,res) => {
             }
 
         }catch{
-            //IDがない
             res.render("error.ejs",{url:req.originalUrl,show_id:req.body.show_id,kind:"DB"})
         }
 });
@@ -176,54 +175,60 @@ app.post("/administrator-home",async(req,res) => {
 //ログインチェックをする関数
 function loginCheck(req,res){
     //req.cookies.token-> {id: account_id}
-    try{
-        //tokenがあるか否か
-        let {token} = req.cookies;
-        if(token == undefined){
-            //ログインしてない
-            res.render("error.ejs",{url:req.originalUrl,show_id:req.body.show_id,kind:"ログイン"})
-        }else{
-            //トークンがある(ログインしてる)
-            jwt.verify(token,LOGIN_SECRET_KEY,function(e,d){
-                if(e){
-                    //認証NG
-                    res.render("error.ejs",{url:req.originalUrl,show_id:req.body.show_id,kind:"ログイン"})
-                }
-            });
-        }
-    }catch{
-        //認証NG
-        res.render("error.ejs",{url:req.originalUrl,show_id:req.body.show_id,kind:"ログイン"})
+    //tokenがあるか否か
+    let {token} = req.cookies;
+    if(token == undefined){
+        //ログインしてない
+        return false
+    }else{
+        //トークンがある(ログインしてる)
+        jwt.verify(token,LOGIN_SECRET_KEY,function(e,d){
+            if(e){
+                //認証NG
+                return false
+            }
+        });
+        return true
     }
 }
 
 //管理画面ホーム
 app.get("/administrator-home",async (req,res) => {
     //ログイン状態チェック
-    loginCheck(req,res);
+    if(!loginCheck(req,res)){
+        res.render("error.ejs",{url:"/sign-in",kind:"ログイン"})
+    }else{
     //自分が管理者のショー管理画面一覧を表示
-    let [db_res] = await query("select * \
-        from entertainment_show;",{},req,res)
-    res.render("list.ejs",{list: db_res,kind_org:req.originalUrl});
+        let [db_res] = await query("select * \
+            from entertainment_show;",{},req,res)
+        res.render("list.ejs",{list: db_res,kind_org:req.originalUrl});
+    }
 });
 
 //新ショー作成申請
 app.get("/show-admin/request-new",(req,res) => {
     //ログイン確認
-    loginCheck(req,res);
-    //IDを送る
-    // res.render("new_show_request.ejs",{account_id:req.account_id})
-    res.render("new_show_request.ejs")
+    if(!loginCheck(req,res)){
+        res.render("error.ejs",{url:"/sign-in",kind:"ログイン"})
+    }else{
+        //IDを送る
+        // res.render("new_show_request.ejs",{account_id:req.account_id})
+        res.render("new_show_request.ejs")
+    }
 });
 
 //新ショー作成申請POST
 app.post("/show-admin/request-new",async(req,res) => {
     //ログインチェック
-    loginCheck(req,res)
-    let content = JSON.stringify(req.body);
-    await query("insert into notice (type_of_message,content,show_id) value ('新ショー申請',:content,1);",
-        {content:content},req,res
-    )
+    if(!loginCheck(req,res)){
+        res.render("error.ejs",{url:"/sign-in",kind:"ログイン"})
+    }else{
+        let content = JSON.stringify(req.body);
+        await query("insert into notice (type_of_message,content,show_id) value ('新ショー申請',:content,1);",
+            {content:content},req,res
+        )
+
+    }
 });
 
 //=========================================================================================
@@ -328,17 +333,19 @@ app.post("/show-report/end",async (req,res) => {
 //http://localhost:3000/show-admin?show_id=2
 app.get("/show-admin",async(req,res) => {
     //ログイン確認
-    loginCheck(req,res);
-    let [show_name] = await query(SHOW_NAME_SQL,{s_id:parseInt(req.query.show_id)},req,res)
-    let [noti_res] = await query(NOTI_SQL,{s_id:parseInt(req.query.show_id)},req,res)
-    let [noti_repo_res] = await query(NOTI_REPO_SQL,{s_id:parseInt(req.query.show_id)},req,res)
-    let [roll_res] = await query(ROLL_SQL,{s_id:parseInt(req.query.show_id)},req,res)
-    let [all_cast_res] = await query(ENT_SQL,{},req,res);
-    res.render("show_administrator.ejs"
-        ,{show_name:show_name[0].show_name,show_id:req.query.show_id,
-            notices:noti_res,noti_repo:noti_repo_res,
-        all_cast:all_cast_res,rolls:roll_res});
-
+    if(!loginCheck(req,res)){
+        res.render("error.ejs",{url:"/sign-in",kind:"ログイン"})
+    }else{
+        let [show_name] = await query(SHOW_NAME_SQL,{s_id:parseInt(req.query.show_id)},req,res)
+        let [noti_res] = await query(NOTI_SQL,{s_id:parseInt(req.query.show_id)},req,res)
+        let [noti_repo_res] = await query(NOTI_REPO_SQL,{s_id:parseInt(req.query.show_id)},req,res)
+        let [roll_res] = await query(ROLL_SQL,{s_id:parseInt(req.query.show_id)},req,res)
+        let [all_cast_res] = await query(ENT_SQL,{},req,res);
+        res.render("show_administrator.ejs"
+            ,{show_name:show_name[0].show_name,show_id:req.query.show_id,
+                notices:noti_res,noti_repo:noti_repo_res,
+            all_cast:all_cast_res,rolls:roll_res});
+    }
 })
 
 //各ショー管理画面の報告削除
@@ -358,8 +365,10 @@ app.get("/show-admin/delete-notice",async(req,res) => {
 //報告詳細確認（報告編集・公開）
 // http://localhost:3000/show-admin/report-detail?show_id=2&report_id=2&notice_id=2
 app.get("/show-admin/report-detail",async(req,res) => {
-        //ログイン確認
-        loginCheck(req,res);
+    //ログイン確認
+    if(!loginCheck(req,res)){
+        res.render("error.ejs",{url:"/sign-in",kind:"ログイン"})
+    }else{
         let [show_name] = await query(SHOW_NAME_SQL,{s_id: parseInt(req.query.show_id)},req,res);
         let [roll_res] = await query(ROLL_SQL,{s_id: parseInt(req.query.show_id)},req,res);
         let [roll_cast_res] = await query(ROLL_CAST_SQL,{s_id: parseInt(req.query.show_id)},req,res);
@@ -374,14 +383,18 @@ app.get("/show-admin/report-detail",async(req,res) => {
                 ,shift:report_res[0].shift,shift_type:report_res[0].type_of_report,
                 td:notice_res[0].day_and_time,
                 report_id:report_res[0].report_id,notice_id:req.query.notice_id});
+    }
+        
 });
 
 
 //シフト編集・公開POST
 // http://localhost:3000/show-admin/report-detail
 app.post("/show-admin/report-detail",async(req,res) => {
-        //ログイン確認
-        loginCheck(req,res);
+    //ログイン確認
+    if(!loginCheck(req,res)){
+        res.render("error.ejs",{url:"/sign-in",kind:"ログイン"})
+    }else{
         //shiftへ登録
         //req.body -> {time:時間,"roll_id":"entertainer_id" ...}
         //TTを登録
@@ -405,13 +418,16 @@ app.post("/show-admin/report-detail",async(req,res) => {
             {r_id:parseInt(req.body.report_id)},req,res);
         //完了画面表示→ホーム画面へ遷移
         res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.show_id});
+    }   
 })
 
 //ポジション追加フォーム
 //http://localhost:3000/show-admin/create-position?show_id=1
 app.get("/show-admin/create-position",async(req,res) => {
-        //ログイン確認
-        loginCheck(req,res);
+    //ログイン確認
+    if(!loginCheck(req,res)){
+        res.render("error.ejs",{url:"/sign-in",kind:"ログイン"})
+    }else{
         let [show_name] = await query(SHOW_NAME_SQL,{s_id:parseInt(req.query.show_id)},req,res)
         let [roll_res] = await query(ROLL_SQL,{s_id:parseInt(req.query.show_id)},req,res)
         let [roll_cast_res] = await query(ROLL_CAST_SQL,{s_id:parseInt(req.query.show_id)},req,res)
@@ -420,13 +436,16 @@ app.get("/show-admin/create-position",async(req,res) => {
         res.render("create_position.ejs",{
             show_id:req.query.show_id, rolls:roll_res, show_name:show_name[0].show_name,
             tt:tt_res,all_cast:cast_res});
+    }
 });
 
 //ポジション追加POST
 //http://localhost:3000/show-admin/create-position
 app.post("/show-admin/create-position",async(req,res) => {
-        //ログイン確認
-        loginCheck(req,res);
+    //ログイン確認
+    if(!loginCheck(req,res)){
+        res.render("error.ejs",{url:"/sign-in",kind:"ログイン"})
+    }else{
         //役名登録
         let [ins_roll] = await query("insert into roll (roll_name,show_id) value (:name,:s_id)",
         {name:req.body["position_name"],s_id:req.body["show_id"]},req,res);
@@ -438,28 +457,36 @@ app.post("/show-admin/create-position",async(req,res) => {
         
         //完了画面表示→ショーホーム画面へ遷移
         res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.show_id});
+    }
 });
 
 //アナウンス追加
 //http://localhost:3000/show-admin/announce?show_id=
 app.get("/show-admin/announce",(req,res) => {
     //ログイン確認
-    loginCheck(req,res);
-    res.render("announce_form.ejs",{show_id:req.query.show_id})
+    if(!loginCheck(req,res)){
+        res.render("error.ejs",{url:"/sign-in",kind:"ログイン"})
+    }else{
+        res.render("announce_form.ejs",{show_id:req.query.show_id})
+    }
 });
 
 //アナウンス追加POST
 app.post("/show-admin/announce",async (req,res) => {
     //ログイン確認
-    loginCheck(req,res);
-    //これ渡す値あってる？
-    let today = new Date();
-    let d = today.getFullYear() + "-" + today.getMonth() + "-" + today.getDate();
-    await query("insert into announce (d,show_id,title,content) value (:date,:s_id,:title,:content)",
-        {s_id:parseInt(req.body.show_id),title:req.body.title,content:req.body.content,date:d}
-    );
-    //完了画面表示→ショーホーム画面へ遷移
-    res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.show_id});
+    if(!loginCheck(req,res)){
+        res.render("error.ejs",{url:"/sign-in",kind:"ログイン"})
+    }else{
+        //これ渡す値あってる？
+        let today = new Date();
+        let d = today.getFullYear() + "-" + today.getMonth() + "-" + today.getDate();
+        await query("insert into announce (d,show_id,title,content) value (:date,:s_id,:title,:content)",
+            {s_id:parseInt(req.body.show_id),title:req.body.title,content:req.body.content,date:d}
+        );
+        //完了画面表示→ショーホーム画面へ遷移
+        res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.show_id});
+        
+    };
 });
 
 //公開済みシフト編集
@@ -467,8 +494,10 @@ app.post("/show-admin/announce",async (req,res) => {
 //http://localhost:3000/show-admin/shift-edit?show_id= & tt_id= 
 app.get("/show-admin/shift-edit",async(req,res) => {
     //ログイン確認
-    loginCheck(req,res);
-    let [show_name] = await query(SHOW_NAME_SQL,{s_id: parseInt(req.query.show_id)},req,res);
+    if(!loginCheck(req,res)){
+        res.render("error.ejs",{url:"/sign-in",kind:"ログイン"})
+    }else{
+        let [show_name] = await query(SHOW_NAME_SQL,{s_id: parseInt(req.query.show_id)},req,res);
     let [roll_res] = await query(ROLL_SQL,{s_id: parseInt(req.query.show_id)},req,res);
     let [roll_cast_res] = await query(ROLL_CAST_SQL,{s_id: parseInt(req.query.show_id)},req,res);
     let [tt_res] = await query(TT_SQL,{s_id: parseInt(req.query.show_id)},req,res);
@@ -490,25 +519,31 @@ app.get("/show-admin/shift-edit",async(req,res) => {
         {title:"公開済みシフトの編集",show_id:req.query.show_id,show_name:show_name[0].show_name,
         rolls:roll_res,roll_cast:roll_cast_res,all_cast:cast_res,tt:tt_res
         ,shift:render_shift,td:day_and_time});
+    }
+    
 })
 
 //公開済みシフト編集POST
 app.post("/show-admin/shift-edit",async(req,res) => {
     //ログイン確認
-    loginCheck(req,res);
-    let [tt_id] = await query("select tt_id from Time_table where day_and_time = :dt",
-        {dt:req.body.time},req,res
-    )
-    delete req.body.time;
-    //シフトテーブルの中身UPDATE
-    for(let key in req.body){
-        await query("update shift set entertainer_id = :ent_id \
-            where tt_id = :t_id && roll_id = :r_id && show_id = :s_id;",
-            {ent_id:parseInt(req.body[key]),r_id:parseInt(key),t_id:tt_id[0].tt_id,s_id:parseInt(req.body.show_id)}
-        ,req,res);
+    if(!loginCheck(req,res)){
+        res.render("error.ejs",{url:"/sign-in",kind:"ログイン"})
+    }else{
+         let [tt_id] = await query("select tt_id from Time_table where day_and_time = :dt",
+            {dt:req.body.time},req,res
+        )
+        delete req.body.time;
+        //シフトテーブルの中身UPDATE
+        for(let key in req.body){
+            await query("update shift set entertainer_id = :ent_id \
+                where tt_id = :t_id && roll_id = :r_id && show_id = :s_id;",
+                {ent_id:parseInt(req.body[key]),r_id:parseInt(key),t_id:tt_id[0].tt_id,s_id:parseInt(req.body.show_id)}
+            ,req,res);
+        }
+        //完了画面表示→ショーホーム画面へ遷移
+        res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.show_id});
     }
-    //完了画面表示→ショーホーム画面へ遷移
-    res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.show_id});
+   
 })
 
 
@@ -570,20 +605,28 @@ app.get("/entertainer",async(req,res) => {
 //キャスト名変更（新人１などとして登録した人の名前が判明した場合などに使用）
 app.get("/entertainer/rename",async(req,res) => {
     //ログイン確認
-    loginCheck(req,res);
-    let [ent_res] = await query("select * from entertainer where entertainer_id > 2;",{},req,res);
-    res.render("rename_entertainer.ejs",{all_cast:ent_res})
+    if(!loginCheck(req,res)){
+        res.render("error.ejs",{url:"/sign-in",kind:"ログイン"})
+    }else{
+        let [ent_res] = await query("select * from entertainer where entertainer_id > 2;",{},req,res);
+        res.render("rename_entertainer.ejs",{all_cast:ent_res})
+    }
+    
 })
 
 //キャスト名変更受け取り
 app.post("/entertainer/rename",async(req,res) => {
     //ログイン確認
-    loginCheck(req,res);
-    await query("update entertainer set entertainer_name = :name \
+    if(!loginCheck(req,res)){
+        res.render("error.ejs",{url:"/sign-in",kind:"ログイン"})
+    }else{
+        await query("update entertainer set entertainer_name = :name \
             where entertianer_id = :id;",
             {id:parseInt(req.body.before_name),name:req.body.after_name},req,res);
-    //完了画面表示→enthome画面へ遷移
-    res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.before_name});
+        //完了画面表示→enthome画面へ遷移
+        res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.before_name});
+    }
+    
 
 });
 
@@ -593,22 +636,29 @@ app.post("/entertainer/rename",async(req,res) => {
 // http://localhost:3000/entertainer/new-ent?name= &redirect= 
 app.get("/entertainer/new-ent",async(req,res) => {
     //ログイン確認
-    loginCheck(req,res);
-    [all_cast_res] = await query(ENT_SQL,{},req,res);
-    res.render("create_new_entertainer.ejs",{all_cast: all_cast_res,name:req.query.name,
-        redirect:req.query.redirect
-    });
+    if(!loginCheck(req,res)){
+        res.render("error.ejs",{url:"/sign-in",kind:"ログイン"})
+    }else{
+        let [all_cast_res] = await query(ENT_SQL,{},req,res);
+        res.render("create_new_entertainer.ejs",{all_cast: all_cast_res,name:req.query.name,
+            redirect:req.query.redirect
+        });   
+    }
+    
 })
 
 //新人登録POST
 app.post("/entertainer/new-ent",async(req,res) => {
         //ログイン確認
-        loginCheck(req,res);
+        if(!loginCheck(req,res)){
+        res.render("error.ejs",{url:"/sign-in",kind:"ログイン"})
+    }else{
         let [ent_id] = await query("insert into entertainer (entertainer_name,bio) value (:name,:bio);",
             {name:req.body.name,bio:req.body.bio},req,res)
         //完了画面表示→enthome画面へ遷移
         res.render("form_end_page.ejs",{url:req.originalUrl,show_id:ent_id.insertId,
             redirect:req.body.redirect
         });
+    }   
 })
 

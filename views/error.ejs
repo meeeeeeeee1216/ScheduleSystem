@@ -3,6 +3,11 @@
     <head>
         <meta charset="UTF-8">
         <title>ショーシフト管理システム</title>
+        <script type="text/javascript">
+            setTimeout(function(){
+                window.location.href = document.getElementById("url").value
+            }, 3 * 1000);
+        </script>
     </head>
     <body>
         <!-- タイトルヘッダーを作る -->
@@ -10,6 +15,7 @@
         <div class="main-body"> 
             <main>
                 <h2><%=kind%>エラー</h2>
+                <input type="text" id="url" value=<%="http://localhost:3000" + url %> style="display: none;">
                 <% if(kind=="DB"){ %>
                     <p>お手数をおかけしますが再度フォームを送信してください。</p>
                     <p>自動で入力画面に戻ります。</p>
@@ -18,7 +24,7 @@
                     <p>ログアウトされています</p>
                     <p>再度ログインしてください</p>
                     <p>自動でログイン画面に移動します</p>
-                    <p>移動しない場合は<a href="http://localhost:3000/sign-in">こちらをクリック</a></p>
+                    <p>移動しない場合は<a href="http://localhost:3000" + url>こちらをクリック</a></p>
                 <%}%>
             </main>
         </div>
