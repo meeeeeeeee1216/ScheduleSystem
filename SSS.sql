@@ -94,7 +94,7 @@ CREATE TABLE SSS.notice(
 -- アナウンス
 CREATE TABLE SSS.announce(
     announce_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    d DATE NOT NULL,
+    d DATETIME NOT NULL,
     show_id INT NOT NULL,
     title text not null,
     content text not null,
@@ -104,11 +104,13 @@ CREATE TABLE SSS.announce(
 
 
 -- レコード作成
-INSERT INTO account(account_id, PW, SNS_id, authority,sns,mail) VALUE 
-('server', 'pass_safety','server_sns',1,1,"mail0@samplemail.com"),
-('show0', 'show_pass0000','show0_sns',2,1,"mail1@samplemail.com"),
-('show1', 'show_pass1111','show1_sns',2,2,"mail2@samplemail.com"),
-('show2', 'show_pass2222','show2_sns',2,2,"mail3@samplemail.com");
+-- PWをハッシュ化しているので注意！
+-- INSERT INTO account(account_id, PW, SNS_id, authority,sns,mail) VALUE 
+-- ('server', 'pass_safety','server_sns',1,1,"mail0@samplemail.com"),
+-- ('show0', 'show_pass0000','show0_sns',2,1,"mail1@samplemail.com"),
+-- ('show1', 'show_pass1111','show1_sns',2,2,"mail2@samplemail.com"),
+-- ('show2', 'show_pass2222','show2_sns',2,2,"mail3@samplemail.com");
+-- ('test', 'test_pass','test',2,2,"test@test.com");
 
 -- ID：１番はサーバーアカウント通知確認用
 INSERT INTO entertainment_show (show_name,administrator_id)
@@ -215,7 +217,7 @@ VALUE
 -- ('C2役',2,NULL),	
 -- ('D2役',2,NULL);
 
---１シフト報告のない報告用
+
 insert into report (shift)
 VALUE
 ("{}");

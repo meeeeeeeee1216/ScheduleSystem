@@ -7,6 +7,7 @@ const path = require("path");
 const bodyParser = require("body-parser");
 const fs = require("fs");
 const ejs = require("ejs");
+const bcrypt = require("bcrypt");
 app.set('view engine','ejs')
 
 //ポートを開く
@@ -104,18 +105,27 @@ app.post("/",(req,res) => {
 
 // })
 
-let test = async() => {
-    await con.query("insert into report (shift,type_of_report) value ('{}','{}');");
-    let [r] = await con.query("select last_insert_id();")
-    let report_id = r[0]["last_insert_id()"];
-    await con.query("insert into notice (show_id,type_of_message,content,report_id) \
-        value (1,'test','test'," + report_id + ");");
-    let [n] = await con.query("select last_insert_id();")
-    let n_id = n[0]["last_insert_id()"];
 
+let update = async(ac) => {
+    console.log(ac.pw)
+    let new_pw = await bcrypt.hash(ac.pw, 12);
+    console.log(new_pw)
+    console.log("a")
+    //autority:2 -> 管理アカウント, authority:1 -> サーバーアカウント
+    await con.query("update account set pw = :pw where account_id = :id;",
+        {id:ac.account_id,pw:new_pw}
+    )
+}
+
+let test = async() => {
+    let [res] = await con.query("select * from account;");
     
-    await con.query("delete from notice where notice_id = " + n_id + ";")
-    await con.query("delete from report where report_id = " + report_id + ";")
+    res.forEach(ac => {
+        if(ac.account_id != "test"){
+            update(ac)
+        }
+    })
+
 }
 
 test();

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>ショーシフト管理システム</title>
+    </head>
+    <body>
+        
+        <script src = "../public/js/make_header.js" type="text/javascript"></script>
+        <main>
+            <div class="title">
+                <h2><%=show_name %>管理者　申請フォーム</h2>
+                <p>以下の内容が管理者全員に通知されます</p>
+                <p>管理者に承認されるとこのショーの管理を行うことができるようになります。</p>
+            </div>
+            <form action="http://localhost:3000/show/coeditor/end" method="post" name="form">
+                <p>アカウントID： <%= id %></p>
+                <p>SNSアカウントID： <%= sns_id %></p>
+                <p>snsサイト名： <%= sns %></p>
+                <div style="display: none;">
+                    <input type="text" name="account_id" value=<%= id %>>
+                    <input type="text" name="sns_id" value=<%= sns_id %>>
+                    <input type="text" name="sns" value=<%= sns %>>
+                </div>
+                <p>申請メッセージ</p>
+                <textarea name="content" rows="5" cols="60"></textarea>
+                
+                <button name="send" type="submit">申請</button>
+            </form>
+            
+        </main>
+   </body>
+</html>

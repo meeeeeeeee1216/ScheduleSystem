@@ -22,7 +22,7 @@ const pool = mysql.createPool({
     user: "root",
     password: 'pass1234',
     database: "SSS",
-    connectionLimit: 5,
+    connectionLimit: 10,
     namedPlaceholders: true
 });
 
@@ -60,13 +60,41 @@ async function query(sql,datas,req,res){
         }
         await con.release();
         return db_res
-    }catch{
+    }catch(error){
+        console.log(error);
         //エラーが起こったらロールバック
         if(sql.slice(0,5) == "insert"){
             await con.rollback()
         }
         res.render("error.ejs",{url:req.originalUrl,show_id:req.body.show_id,kind:"DB"})
     }
+}
+//ログインチェックをする関数
+function loginCheck(req,res){
+    //req.cookies.token-> {id: account_id}
+    //tokenがあるか否か
+    let {token} = req.cookies;
+    if(token == undefined){
+        //ログインしてない
+        return false
+    }else{
+        //トークンがある(ログインしてる)
+        jwt.verify(token,LOGIN_SECRET_KEY,function(e,d){
+            if(e){
+                //認証NG
+                return false
+            }
+        });
+        return true
+    }
+}
+
+//tokenからアカウントIDを引っ張ってくる
+function getAccountId(cookie){
+    let payload = cookie.token.split(".")[1];
+    
+    let id = JSON.parse(Buffer.from(payload, 'base64').toString()).id;
+    return id
 }
 
 //============================================================================
@@ -108,7 +136,7 @@ app.get("/accept-request",async(req,res) => {
         if(Object.keys(obj).includes("account_id")){
             //autority:2 -> 管理アカウント, authority:1 -> サーバーアカウント
             await query("insert into account (account_id,PW,SNS_id,authority,sns,mail) value (:id,:PW,:sns_id,2,:sns,:mail);",
-                {id:obj.account_id,PW:obj.PW,sns_id:obj.SNS_id,mail:obj.mail,sns:parseInt(obj.SNS)},
+                {id:obj.account_id,PW:obj.PW,sns_id:obj.SNS_id,mail:obj.mail,sns:parseInt(obj.SNS)+1},
                 req,res
             )
         }else if(Object.keys(obj).includes("show_name")){
@@ -152,7 +180,8 @@ app.post("/administrator-home",async(req,res) => {
                     };
                     let token = jwt.sign(Payload,LOGIN_SECRET_KEY,Options);
                     //cookieにかく
-                    res.cookie("token",token,{
+                    res.cookie("token",token,
+                        "account_id", req.body.account_id,{
                         httpOnly: true,
                         secure: true
                     });
@@ -172,25 +201,8 @@ app.post("/administrator-home",async(req,res) => {
         }
 });
 
-//ログインチェックをする関数
-function loginCheck(req,res){
-    //req.cookies.token-> {id: account_id}
-    //tokenがあるか否か
-    let {token} = req.cookies;
-    if(token == undefined){
-        //ログインしてない
-        return false
-    }else{
-        //トークンがある(ログインしてる)
-        jwt.verify(token,LOGIN_SECRET_KEY,function(e,d){
-            if(e){
-                //認証NG
-                return false
-            }
-        });
-        return true
-    }
-}
+
+
 
 //管理画面ホーム
 app.get("/administrator-home",async (req,res) => {
@@ -200,7 +212,7 @@ app.get("/administrator-home",async (req,res) => {
     }else{
     //自分が管理者のショー管理画面一覧を表示
         let [db_res] = await query("select * \
-            from entertainment_show;",{},req,res)
+            from entertainment_show ;",{},req,res)
         res.render("list.ejs",{list: db_res,kind_org:req.originalUrl});
     }
 });
@@ -265,15 +277,35 @@ app.get("/show-home",async(req,res) => {
 });
 
 //各ショー画面(http://localhost:3000/show?show_id=)
-app.get("/show",async(res,req) => {
+app.get("/show", async(req,res) => {
     let [show_name] = await query(SHOW_NAME_SQL,{s_id: parseInt(req.query.show_id)},req,res);
     let [shift_res] = await query(SHIFT_SQL,{s_id: parseInt(req.query.show_id)},req,res);
     let [roll_res] = await query(ROLL_SQL,{s_id: parseInt(req.query.show_id)},req,res);
     let [announce_res] = await query("select * from announce where show_id = :s_id",{s_id: parseInt(req.query.show_id)},req,res)
+    let isLogin = loginCheck(req,res);
     res.render("show_home.ejs",{shift_res:shift_res,rolls:roll_res,
         announce:announce_res,
-        show_name:show_name[0].show_name,show_id:req.query.show_id});
+        show_name:show_name[0].show_name,show_id:req.query.show_id
+        ,isLogin:isLogin});
 });
+
+app.get("/show/coeditor/request",async(req,res) => {
+    //ログイン確認
+    if(!loginCheck(req,res)){
+        res.render("error.ejs",{url:"/sign-in",kind:"ログイン"})
+    }else{
+        //req.cookies.token-> {id: account_id}
+        let id = getAccountId(req.cookies);
+        console.log(id);
+        let [ac] = await query("select account_id,sns_id,sns from account\
+             where account_id = :id;",{id:id})
+        console.log(ac)
+        let [show_name] = await query(SHOW_NAME_SQL,{s_id:parseInt(req.query.show_id)})
+        res.render("coeditor-request.ejs",
+            {id:ac[0].account_id,sns_id:ac[0].sns_id,sns:ac[0].sns
+                ,show_id:req.query.show_id,show_name:show_name[0].show_name})
+    }
+})
 
 //各ショー報告画面（http://localhost:3000/show-report?show_id=2）
 app.get("/show-report",async(req,res) => {
@@ -462,12 +494,13 @@ app.post("/show-admin/create-position",async(req,res) => {
 
 //アナウンス追加
 //http://localhost:3000/show-admin/announce?show_id=
-app.get("/show-admin/announce",(req,res) => {
+app.get("/show-admin/announce",async(req,res) => {
     //ログイン確認
     if(!loginCheck(req,res)){
         res.render("error.ejs",{url:"/sign-in",kind:"ログイン"})
     }else{
-        res.render("announce_form.ejs",{show_id:req.query.show_id})
+        let [show_res] = await query(SHOW_NAME_SQL,{s_id:parseInt(req.query.show_id)},req,res)
+        res.render("announce_form.ejs",{show_id:req.query.show_id,show_name:show_res[0].show_name})
     }
 });
 
@@ -477,11 +510,9 @@ app.post("/show-admin/announce",async (req,res) => {
     if(!loginCheck(req,res)){
         res.render("error.ejs",{url:"/sign-in",kind:"ログイン"})
     }else{
-        //これ渡す値あってる？
-        let today = new Date();
-        let d = today.getFullYear() + "-" + today.getMonth() + "-" + today.getDate();
         await query("insert into announce (d,show_id,title,content) value (:date,:s_id,:title,:content)",
-            {s_id:parseInt(req.body.show_id),title:req.body.title,content:req.body.content,date:d}
+            {s_id:parseInt(req.body.show_id),title:req.body.title,
+                content:req.body.content,date:req.body.d},req,res
         );
         //完了画面表示→ショーホーム画面へ遷移
         res.render("form_end_page.ejs",{url:req.originalUrl,show_id:req.body.show_id});

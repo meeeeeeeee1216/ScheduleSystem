@@ -15,11 +15,13 @@
                 method="post" name="form">
                 <div id="announce-title">
                     <p>件名</p>
-                    <input type="text" name="announce-title" require>
+                    <input type="text" name="title" require>
+                    <p>日時</p>
+                    <input type="datetime-local" name="d" required>
                 </div>
                 <div id="content">
                     <p>本文</p>
-                    <textarea name="other" rows="10" cols="60"></textarea>
+                    <textarea name="content" rows="10" cols="60"></textarea>
                 <input type="text" name = "show_id" style="display: none;" value = <%= show_id %> requierd>
                 <button name="send" type="submit">報告</button>
             </form>

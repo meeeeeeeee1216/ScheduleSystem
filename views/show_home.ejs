@@ -14,6 +14,9 @@
             </div>
             <div>
                 <p><a href= <%= "http://localhost:3000/show-report?show_id=" + show_id %>> シフト報告はこちらから</a></p>
+                <% if(isLogin){ %>
+                    <p><a href= <%= "http://localhost:3000/show/coeditor/request?show_id=" + show_id %>> 共同管理の申請はこちらから</a></p>
+                <% } %>
             </div>
             <div class="shift-calender">
                 <h3>シフト一覧</h3>
@@ -61,7 +64,7 @@
                                 <%};%>
                             </tr>
                         <% }; %>
-                        <!-- 備考欄 -->
+                        <!-- 備考欄,未実装 -->
                         <tr>
                             <th>備考</th>
                         </tr>
@@ -78,20 +81,26 @@
                         <th>詳細</th>
                     </tr>
                     <% announce.forEach(an => { %>
-                        <tr>
-                            <td><%= an.d %></td>
+                        <tr bgcolor="gray">
+                            <td><%= an.d.toLocaleString().split(" ")[0] %><br>
+                            <%= an.d.toLocaleString().split(" ")[1] %></td>
                             <td><%= an.title %></td>
                             <td><button id = <%= "open" + an.announce_id %> onClick="show_detail(this)" > 詳細表示</td>
                         </tr>
-                        <tr>
-                            <td id = <%= "content" + an.announce_id %> style="display: none;" ><%= an.content %></td>
+                        <tr id=<%= "content-" + an.announce_id %> style="display: none;">
+                            <td colspan="2" ><%= an.content %></td>
+                            <td><button id = <%= "close" + an.announce_id %> onClick="close_detail(this)" > 閉じる</td>
                         </tr>
                     <% }); %>
                 </table>
                 <script type="text/javascript">
                     function show_detail(e){
                         let id = e.id.slice(4);
-                        document.getElementById("content" + id).style.display = "contents";
+                        document.getElementById("content-" + id).style.display = "";
+                    }
+                    function close_detail(e){
+                        let id = e.id.slice(5);
+                        document.getElementById("content-" + id).style.display = "none";
                     }
                 </script>
             </div>
