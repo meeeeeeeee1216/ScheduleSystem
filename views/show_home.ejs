@@ -23,12 +23,15 @@
                 <% 
                     //shift_resを日時をカギにした連想配列に変える
                     //ex -> {"yyyy/mm/dd tt:mm:ss":{"roll_name":"entertainer_name"}}
+                    //ex -> {"yyyy/mm/dd tt:mm:ss":"tt_id"}
                     var shift = {}
+                    var tt_id = {}
                     shift_res.forEach(s => {
                         if(s.day_and_time in shift){
                             //何もしない
                         }else{
                             shift[s.day_and_time] = {};
+                            tt_id[s.day_and_time] = s.tt_id
                         }
                         shift[s.day_and_time][s.roll_name] = s.entertainer_name;
                     });
@@ -39,14 +42,27 @@
                             <th> 役/日</th>
                             <!-- 日付生成 -->
                             <% for(var key in shift){  %>
+                                <% var id = tt_id[key] %>
                                 <% key = key.split(" "); %>
                                 <% const ENG_TO_NUM_MONTH = {"Jan":1,"Feb":2,"Mar":3,"Apr":4,"May":5,"Jun":6,"Jul":7,"Aug":8,"Sep":9,"Oct":10,"Nov":11,"Dec":12}; %>
                                 <% const ENG_TO_JA_DAY = {"Sun":"(日)","Mon":"(月)","Tue":"(火)","Wed":"(水)","Thu":"(木)","Fri":"(金)","Sat":"(土)"}; %>
-                                <th> 
-                                    <%= key[3] + "/" + ENG_TO_NUM_MONTH[key[1]] + "/" + key[2] + 
-                                    ENG_TO_JA_DAY[key[0]]%> <br>
-                                    <%= key[4].slice(0,5) %> 
-                                </th>
+                                <% if(isLogin){ %>
+                                    <th> 
+                                        <a href=<%= "http://localhost:3000/show-admin/shift-edit?show_id="+ show_id + "&tt_id=" + id %>>
+                                            <%= key[3] + "/" + ENG_TO_NUM_MONTH[key[1]] + "/" + key[2] + 
+                                            ENG_TO_JA_DAY[key[0]]%> <br>
+                                            <%= key[4].slice(0,5) %> 
+                                        </a>
+                                    </th>
+                                <% }else{ %>
+                                    <th> 
+                                        <%= key[3] + "/" + ENG_TO_NUM_MONTH[key[1]] + "/" + key[2] + 
+                                        ENG_TO_JA_DAY[key[0]]%> <br>
+                                        <%= key[4].slice(0,5) %> 
+                                    </th>
+
+                                <% } %>
+                                
                             <%};%>
                              
                         </tr>

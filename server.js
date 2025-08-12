@@ -434,7 +434,7 @@ app.post("/show-admin/report-detail",async(req,res) => {
             {s_id: parseInt(req.body.show_id),t:req.body.time},req,res);
         //ポジション毎にShiftについか
         for(var roll_id in req.body){
-            if(parseInt(req.body[roll_id]) != 1 && parseInt(req.body[roll_id]) != NaN){
+            if(parseInt(req.body[roll_id]) != 1 && parseInt(req.body[roll_id]) != NaN && parseInt(roll_id) != NaN){
                 await query("insert into shift (tt_id,roll_id,entertainer_id,show_id) \
                     value (:tt_id,:r_id,:ent_id,:s_id);",
                     {tt_id:parseInt(ins_tt.insertId),
@@ -535,21 +535,24 @@ app.get("/show-admin/shift-edit",async(req,res) => {
     let [cast_res] = await query(ENT_SQL,{},req,res);
     let [day_and_time] = await query("select day_and_time from Time_Table where tt_id = :tt_id"
         ,{tt_id:parseInt(req.query.tt_id)},req,res)
-    let [shift_res] = await query("select shift.id,roll.roll_id,entertainer.entertainer_id \
+    let [shift_res] = await query("select roll.roll_id,entertainer.entertainer_id \
     from shift join entertainer using(entertainer_id) \
     join roll using(roll_id) \
     join entertainment_show as ES on ES.show_id = shift.show_id \
     join time_table as tt using(tt_id) \
     where shift.show_id = :s_id && tt.tt_id = :tt_id;" 
     ,{s_id:parseInt(req.query.show_id),tt_id:parseInt(req.query.tt_id)},req,res);
+    var render_shift = {}
+    var shift_type = {}
     shift_res.forEach(shift => {
         render_shift[shift.roll_id] = shift.entertainer_id;
+        shift_type[shift.roll_id] = "1"
     })
 
     res.render("shift_report_edit.ejs",
         {title:"公開済みシフトの編集",show_id:req.query.show_id,show_name:show_name[0].show_name,
         rolls:roll_res,roll_cast:roll_cast_res,all_cast:cast_res,tt:tt_res
-        ,shift:render_shift,td:day_and_time});
+        ,shift:render_shift,td:day_and_time[0]["day_and_time"],shift_type:shift_type});
     }
     
 })
